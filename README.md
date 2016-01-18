@@ -1,0 +1,1 @@
+This is a C Unit Test library (CUT) developed because I was bored one night
