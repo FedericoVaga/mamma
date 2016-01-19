@@ -5,13 +5,10 @@
 #ifndef __CUT_H__
 #define __CUT_H__
 
-#define CUT_NAME_MAX_LEN 32
-#define CUT_TEST_MAX 128
-
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 
 struct cut_test {
-	char name[CUT_NAME_MAX_LEN];
+	const char *name;
 	struct cut_suite *suite;
 	void *private;
 	void (*set_up)(struct cut_test *test);
@@ -31,10 +28,10 @@ struct cut_test {
  * Test suite container. It is a collection of tests
  */
 struct cut_suite {
-	char name[CUT_NAME_MAX_LEN]; /**< suite name */
+	const char *name; /**< suite name */
 	void *private;
-	struct cut_test *tests; /**< list of tests */
-	unsigned int test_count; /**< number of valid tests */
+	const struct cut_test *tests; /**< list of tests */
+	const unsigned int test_count; /**< number of valid tests */
 	void (*set_up)(struct cut_suite *cut_suite);
 	void (*tear_down)(struct cut_suite *cut_suite);
 };
