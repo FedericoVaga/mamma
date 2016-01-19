@@ -76,22 +76,25 @@ static int __cut_assert_mem_null(va_list args)
 	return (ptr == NULL);
 }
 
-struct cut_assertion asserts[] = {
+/**
+ * List of known test conditions
+ */
+static const struct cut_assertion asserts[] = {
 	[CUT_INT_EQ] = {
 		.condition = __cut_assert_int_equal,
-		.fmt = "Expected <%d> but got <%d>",
+		.fmt = "Expected <%d>, but got <%d>",
 	},
 	[CUT_INT_NEQ] = {
 		.condition = __cut_assert_int_not_equal,
-		.fmt = "Expected any but not <%d> but got <%d>",
+		.fmt = "Expected any but not <%d>, but got <%d>",
 	},
 	[CUT_INT_RANGE] = {
 		.condition = __cut_assert_int_in_range,
-		.fmt = "Expected in range [%d, %d] but got <%d>",
+		.fmt = "Expected in range [%d, %d], but got <%d>",
 	},
 	[CUT_INT_NRANGE] = {
 		.condition = __cut_assert_int_not_in_range,
-		.fmt = "Expected outside range [%d, %d] but got <%d>",
+		.fmt = "Expected outside range [%d, %d], but got <%d>",
 	},
 	[CUT_MEM_NOT_NULL] = {
 		.condition = __cut_assert_mem_not_null,
@@ -104,6 +107,11 @@ struct cut_assertion asserts[] = {
 };
 
 
+/**
+ * Generic failure function
+ * It prints a failure message and it jumps out from the current test function
+ * in order to run the next one
+ */
 static void _cut_fail(enum cut_asserts type,
 		      const char *func, const unsigned int line,
 		      va_list args)
@@ -113,6 +121,7 @@ static void _cut_fail(enum cut_asserts type,
 	fprintf(stdout, "\n");
 	longjmp(global_jbuf, CUT_JUMP_ERROR);
 }
+
 
 void ___cut_assert(enum cut_asserts type,
 		   const char *func, const unsigned int line,
