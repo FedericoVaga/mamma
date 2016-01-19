@@ -9,6 +9,13 @@
 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 
+enum cut_asserts {
+	CUT_INT_EQ = 0,
+	CUT_INT_NEQ ,
+	CUT_INT_RANGE,
+	CUT_INT_NRANGE,
+};
+
 enum cut_test_state {
 	CUT_STATE_STOP = 0,
 	CUT_STATE_RUNNING,
@@ -23,21 +30,18 @@ enum cut_test_jump_conditions {
 };
 
 struct cut_test {
-	const char *name;
 	enum cut_test_state state;
 	struct cut_suite *suite;
 	void *private;
 	void (*set_up)(struct cut_test *test);
 	void (*test)(struct cut_test *test);
 	void (*tear_down)(struct cut_test *test);
-	jmp_buf jbuf;
 };
-#define cut_test_declare(_name, _up, _down, _test, _priv) {	\
-		.name = (_name),				\
-			.private = (_priv),			\
-			.set_up = (_up),			\
-			.test = (_test),			\
-			.tear_down = (_down),			\
+#define cut_test_declare(_up, _down, _test, _priv) {	\
+		.private = (_priv),			\
+			.set_up = (_up),		\
+			.test = (_test),		\
+			.tear_down = (_down),		\
 			}
 
 
@@ -70,35 +74,27 @@ struct cut_suite {
 extern void cut_suite_init(struct cut_suite *suite);
 extern void cut_suite_run(struct cut_suite *cut_suite, unsigned long flags);
 
-extern void _cut_assert(struct cut_test *cut_test, unsigned int condition,
-			char *msg, const char *func, const unsigned int line);
-#define cut_assert(_ct, _cond, _msg, _f, _l) \
-	_cut_assert((_ct), (_cond), (_msg), __func__, __LINE__)
+extern void _cut_assert(unsigned int condition, char *msg,
+			const char *func, const unsigned int line);
+#define cut_assert(_cond, _msg, _f, _l) \
+	_cut_assert((_cond), (_msg), __func__, __LINE__)
 
 
 /**
  * @defgroup cut_assert_int Integer Assertions
  */
-extern void _cut_assert_int_eq(struct cut_test *cut_test, int exp, int val,
-			       const char *func, const unsigned int line);
+void ___cut_assert(enum cut_asserts type,
+		   const char *func, const unsigned int line,
+		   ...);
 
-extern void _cut_assert_int_neq(struct cut_test *cut_test, int exp, int val,
-				const char *func, const unsigned int line);
-extern void _cut_assert_int_range(struct cut_test *cut_test, int min, int max,
-				  int val, const char *func,
-				  const unsigned int line);
-extern void _cut_assert_int_nrange(struct cut_test *cut_test, int min, int max,
-				  int val, const char *func,
-				   const unsigned int line);
-
-#define cut_assert_int_eq(_ct, _exp, _val) \
-	_cut_assert_int_eq((_ct), (_exp), (_val), __func__, __LINE__)
-#define cut_assert_int_neq(_ct, _exp, _val) \
-	_cut_assert_int_eq((_ct), (_exp), (_val), __func__, __LINE__)
-#define cut_assert_int_range(_ct, _min, _max, _val) \
-	_cut_assert_int_range((_ct), (_min), (_max), (_val), __func__, __LINE__)
-#define cut_assert_int_nrange(_ct, _min, _max, _val) \
-	_cut_assert_int_nrange((_ct), (_min), (_max), (_val), __func__, __LINE__)
+#define cut_assert_int_eq(_exp, _val) \
+	___cut_assert(CUT_INT_EQ, (__func__), (__LINE__), (_exp), (_val))
+#define cut_assert_int_neq(_exp, _val) \
+	___cut_assert(CUT_INT_NEQ, (__func__), (__LINE__), (_exp), (_val))
+#define cut_assert_int_range(_min, _max, _val) \
+	___cut_assert(CUT_INT_RANGE, (__func__), (__LINE__), (_min), (_max), (_val))
+#define cut_assert_int_nrange(_min, _max, _val) \
+	___cut_assert(CUT_INT_NRANGE, (__func__), (__LINE__), (_min), (_max), (_val))
 /** @} */
 
 #endif

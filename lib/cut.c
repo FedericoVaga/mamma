@@ -4,72 +4,115 @@
 #include <stdio.h>
 #include <string.h>
 #include <setjmp.h>
+#include <stdarg.h>
 #include "cut.h"
 
-void _cut_assert(struct cut_test *cut_test, unsigned int condition, char *msg,
-		const char *func, const unsigned int line)
+static jmp_buf global_jbuf;
+
+struct cut_assertion {
+	int (*condition)();
+	char *fmt;
+};
+
+
+
+static int __cut_assert_int_equal(va_list args)
 {
-	if (!condition) {
-		if (cut_test->suite->flags & CUT_VERBOSE)
-			fprintf(stdout, "Test \"%s\": FAIL@%s():%d - \"%s\"\n",
-				cut_test->name, func, line, msg);
-		longjmp(cut_test->jbuf, CUT_JUMP_ERROR);
-	}
+	int a, b;
+
+	a = va_arg(args, int);
+	b = va_arg(args, int);
+
+	return (a == b);
 }
 
-void _cut_assert_int_eq(struct cut_test *cut_test, int exp, int val,
-			const char *func, const unsigned int line)
+static int __cut_assert_int_not_equal(va_list args)
 {
-	char msg[64];
+	int a, b;
+
+	a = va_arg(args, int);
+	b = va_arg(args, int);
+
+	return (a != b);
+}
+
+static int __cut_assert_int_in_range(va_list args)
+{
+	int min, max, val;
+
+	min = va_arg(args, int);
+	max = va_arg(args, int);
+	val = va_arg(args, int);
+
+	return (min <= val && val <= max);
+}
+
+static int __cut_assert_int_not_in_range(va_list args)
+{
+	int min, max, val;
+
+	min = va_arg(args, int);
+	max = va_arg(args, int);
+	val = va_arg(args, int);
+
+	return (min > val || val > max);
+}
+
+struct cut_assertion asserts[] = {
+	[CUT_INT_EQ] = {
+		.condition = __cut_assert_int_equal,
+		.fmt = "Expected <%d> but got <%d>",
+	},
+	[CUT_INT_NEQ] = {
+		.condition = __cut_assert_int_not_equal,
+		.fmt = "Expected any but not <%d> but got <%d>",
+	},
+	[CUT_INT_RANGE] = {
+		.condition = __cut_assert_int_in_range,
+		.fmt = "Expected in range [%d, %d] but got <%d>",
+	},
+	[CUT_INT_NRANGE] = {
+		.condition = __cut_assert_int_not_in_range,
+		.fmt = "Expected outside range [%d, %d] but got <%d>",
+	},
+};
+
+
+static void _cut_fail(enum cut_asserts type,
+		      const char *func, const unsigned int line,
+		      va_list args)
+{
+	fprintf(stdout, "FAILURE@%s():%d - ", func, line);
+	vfprintf(stdout, asserts[type].fmt, args);
+	fprintf(stdout, "\n");
+	longjmp(global_jbuf, CUT_JUMP_ERROR);
+}
+
+void ___cut_assert(enum cut_asserts type,
+		   const char *func, const unsigned int line,
+		   ...)
+{
 	int cond;
+	va_list args;
 
-	cond = (exp == val);
-	snprintf(msg, 64, "Expected <%d> but got <%d>", exp, val);
-	_cut_assert(cut_test, cond, msg, func, line);
+	va_start(args, line);
+	cond = asserts[type].condition(args);
+	va_end(args);
+
+	if (cond)
+		return;
+
+	va_start(args, line);
+	_cut_fail(type, func, line, args);
+	va_end(args);
 }
-
-void _cut_assert_int_neq(struct cut_test *cut_test, int exp, int val,
-			 const char *func, const unsigned int line)
-{
-	char msg[64];
-	int cond;
-
-	cond = (exp != val);
-	snprintf(msg, 64, "Expected any but not <%d> but got <%d>", exp, val);
-	_cut_assert(cut_test, cond, msg, func, line);
-}
-
-void _cut_assert_int_range(struct cut_test *cut_test, int min, int max, int val,
-			 const char *func, const unsigned int line)
-{
-	char msg[64];
-	int cond;
-
-	cond = (min <= val && val<= max);
-	snprintf(msg, 64, "Expected in range [%d, %d] but got <%d>",
-		 min, max, val);
-	_cut_assert(cut_test, cond, msg, func, line);
-}
-
-void _cut_assert_int_nrange(struct cut_test *cut_test, int min, int max, int val,
-			 const char *func, const unsigned int line)
-{
-	char msg[64];
-	int cond;
-
-	cond = (min >= val || val >= max);
-	snprintf(msg, 64, "Expected outside range [%d, %d] but got <%d>",
-		 min, max, val);
-	_cut_assert(cut_test, cond, msg, func, line);
-}
-
 
 static void cut_test_run(struct cut_test *cut_test)
 {
 	cut_test->state = CUT_STATE_RUNNING;
 
 	/* Set up environment */
-	switch (setjmp(cut_test->jbuf)) {
+	switch (setjmp(global_jbuf)) {
 	case CUT_NO_JUMP:
 		if (cut_test->set_up)
 			cut_test->set_up(cut_test);
@@ -80,9 +123,6 @@ static void cut_test_run(struct cut_test *cut_test)
 
 		/* Clear the environment */
 		/* Success */
-		if (cut_test->suite->flags & CUT_VERBOSE)
-			fprintf(stdout, "Test \"%s\": SUCCESS\n",
-				cut_test->name);
 		cut_test->state = CUT_STATE_SUCCESS;
 		cut_test->suite->success_count++;
 		if (cut_test->tear_down)
