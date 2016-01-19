@@ -7,7 +7,7 @@
 #include "cut.h"
 
 void _cut_assert(struct cut_test *cut_test, unsigned int condition, char *msg,
-		const char *func, unsigned int line)
+		const char *func, const unsigned int line)
 {
 	if (!condition) {
 		if (cut_test->suite->flags & CUT_VERBOSE)
@@ -18,7 +18,7 @@ void _cut_assert(struct cut_test *cut_test, unsigned int condition, char *msg,
 }
 
 void _cut_assert_int_eq(struct cut_test *cut_test, int exp, int val,
-			      const char *func, unsigned int line)
+			const char *func, const unsigned int line)
 {
 	char msg[64];
 	int cond;
@@ -27,6 +27,42 @@ void _cut_assert_int_eq(struct cut_test *cut_test, int exp, int val,
 	snprintf(msg, 64, "Expected <%d> but got <%d>", exp, val);
 	_cut_assert(cut_test, cond, msg, func, line);
 }
+
+void _cut_assert_int_neq(struct cut_test *cut_test, int exp, int val,
+			 const char *func, const unsigned int line)
+{
+	char msg[64];
+	int cond;
+
+	cond = (exp != val);
+	snprintf(msg, 64, "Expected any but not <%d> but got <%d>", exp, val);
+	_cut_assert(cut_test, cond, msg, func, line);
+}
+
+void _cut_assert_int_range(struct cut_test *cut_test, int min, int max, int val,
+			 const char *func, const unsigned int line)
+{
+	char msg[64];
+	int cond;
+
+	cond = (min <= val && val<= max);
+	snprintf(msg, 64, "Expected in range [%d, %d] but got <%d>",
+		 min, max, val);
+	_cut_assert(cut_test, cond, msg, func, line);
+}
+
+void _cut_assert_int_nrange(struct cut_test *cut_test, int min, int max, int val,
+			 const char *func, const unsigned int line)
+{
+	char msg[64];
+	int cond;
+
+	cond = (min >= val || val >= max);
+	snprintf(msg, 64, "Expected outside range [%d, %d] but got <%d>",
+		 min, max, val);
+	_cut_assert(cut_test, cond, msg, func, line);
+}
+
 
 static void cut_test_run(struct cut_test *cut_test)
 {
