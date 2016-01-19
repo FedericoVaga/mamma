@@ -14,6 +14,9 @@ enum cut_asserts {
 	CUT_INT_NEQ ,
 	CUT_INT_RANGE,
 	CUT_INT_NRANGE,
+	CUT_MEM_NOT_NULL,
+	CUT_MEM_NULL,
+	__CUT_MAX_STANDARD_ASSERTION,
 };
 
 enum cut_test_state {
@@ -97,4 +100,14 @@ void ___cut_assert(enum cut_asserts type,
 	___cut_assert(CUT_INT_NRANGE, (__func__), (__LINE__), (_min), (_max), (_val))
 /** @} */
 
+/**
+ * @defgroup cut_assert_mem Memory Assertions
+ */
+
+#define cut_assert_mem_not_null(_ptr) \
+	___cut_assert(CUT_MEM_NOT_NULL, (__func__), (__LINE__), (_ptr))
+#define cut_assert_mem_null(_ptr) \
+	___cut_assert(CUT_MEM_NULL, (__func__), (__LINE__), (_ptr))
+
+/** @} */
 #endif

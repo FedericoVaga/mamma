@@ -30,12 +30,30 @@ static void test3(struct cut_test *cut_test)
 	cut_assert_int_range(0, 10, 100);
 }
 
+static void test4(struct cut_test *cut_test)
+{
+	void *ptr = NULL;
+
+	cut_assert_mem_not_null(cut_test);
+	cut_assert_mem_not_null(ptr);
+}
+
+static void test5(struct cut_test *cut_test)
+{
+	void *ptr = NULL;
+
+	cut_assert_mem_null(ptr);
+	cut_assert_mem_null(cut_test);
+}
+
 int main(int argc, char *argv[])
 {
 	struct cut_test tests[] = {
 		cut_test_declare(set_up, tear_down, test1, NULL),
 		cut_test_declare(set_up, tear_down, test2, NULL),
 		cut_test_declare(set_up, tear_down, test3, NULL),
+		cut_test_declare(set_up, tear_down, test4, NULL),
+		cut_test_declare(set_up, tear_down, test5, NULL),
 	};
 	struct cut_suite suite = cut_suite_declare("cut main test suite\0",
 						   tests, ARRAY_SIZE(tests),

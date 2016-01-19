@@ -58,6 +58,24 @@ static int __cut_assert_int_not_in_range(va_list args)
 	return (min > val || val > max);
 }
 
+static int __cut_assert_mem_not_null(va_list args)
+{
+	void *ptr;
+
+	ptr = va_arg(args, void*);
+
+	return (ptr != NULL);
+}
+
+static int __cut_assert_mem_null(va_list args)
+{
+	void *ptr;
+
+	ptr = va_arg(args, void*);
+
+	return (ptr == NULL);
+}
+
 struct cut_assertion asserts[] = {
 	[CUT_INT_EQ] = {
 		.condition = __cut_assert_int_equal,
@@ -74,6 +92,14 @@ struct cut_assertion asserts[] = {
 	[CUT_INT_NRANGE] = {
 		.condition = __cut_assert_int_not_in_range,
 		.fmt = "Expected outside range [%d, %d] but got <%d>",
+	},
+	[CUT_MEM_NOT_NULL] = {
+		.condition = __cut_assert_mem_not_null,
+		.fmt = "Expected not NULL pointer <%p>",
+	},
+	[CUT_MEM_NULL] = {
+		.condition = __cut_assert_mem_null,
+		.fmt = "Expected NULL pointer <%p>"
 	},
 };
 
