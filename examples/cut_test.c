@@ -49,16 +49,15 @@ static void test5(struct cut_test *cut_test)
 int main(int argc, char *argv[])
 {
 	struct cut_test tests[] = {
-		cut_test_declare(set_up, tear_down, test1, NULL),
-		cut_test_declare(set_up, tear_down, test2, NULL),
-		cut_test_declare(set_up, tear_down, test3, NULL),
-		cut_test_declare(set_up, tear_down, test4, NULL),
-		cut_test_declare(set_up, tear_down, test5, NULL),
+		cut_test(set_up, tear_down, test1, NULL),
+		cut_test(set_up, tear_down, test2, NULL),
+		cut_test(set_up, tear_down, test3, NULL),
+		cut_test(set_up, tear_down, test4, NULL),
+		cut_test(set_up, tear_down, test5, NULL),
 	};
-	struct cut_suite suite = cut_suite_declare("cut main test suite\0",
-						   tests, ARRAY_SIZE(tests),
-						   NULL, NULL,
-						   NULL);
+	struct cut_suite suite = cut_suite("cut main test suite\0",
+					   tests, ARRAY_SIZE(tests),
+					   NULL, NULL, NULL);
 
 	cut_suite_init(&suite);
 	cut_suite_run(&suite, CUT_VERBOSE);

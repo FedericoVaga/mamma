@@ -40,11 +40,11 @@ struct cut_test {
 	void (*test)(struct cut_test *test);
 	void (*tear_down)(struct cut_test *test);
 };
-#define cut_test_declare(_up, _down, _test, _priv) {	\
-		.private = (_priv),			\
-			.set_up = (_up),		\
-			.test = (_test),		\
-			.tear_down = (_down),		\
+#define cut_test(_up, _down, _test, _priv) {	\
+		.private = (_priv),		\
+			.set_up = (_up),	\
+			.test = (_test),	\
+			.tear_down = (_down),	\
 			}
 
 
@@ -62,7 +62,7 @@ struct cut_suite {
 	unsigned int success_count;
 	unsigned int fail_count;
 };
-#define cut_suite_declare(_name, _test, _test_count, _up, _down, _priv) { \
+#define cut_suite(_name, _test, _test_count, _up, _down, _priv) {	\
 		.name = (_name),					\
 			.private = (_priv),				\
 			.tests = (_test),				\
