@@ -7,31 +7,30 @@
 
 static void set_up(struct cut_test *cut_test)
 {
-	printf("Setting up test\n");
 }
 static void tear_down(struct cut_test *cut_test)
 {
-	printf("Clearning test\n");
 }
 
 static void test1(struct cut_test *cut_test)
 {
-	printf("doing something\n");
+	cut_assert(cut_test, 2+2==5, "expected 4", __func__, __LINE__);
 }
 
 static void test2(struct cut_test *cut_test)
 {
-	printf("doing something else\n");
+	cut_assert(cut_test, 2+2==4, "expected 4", __func__, __LINE__);
 }
 
 int main(int argc, char *argv[])
 {
 	struct cut_test tests[] = {
-		cut_test_declare("first", set_up, tear_down, test1, NULL),
-		cut_test_declare("second", set_up, tear_down, test2, NULL),
+		cut_test_declare("first\0", set_up, tear_down, test1, NULL),
+		cut_test_declare("second\0", set_up, tear_down, test2, NULL),
 	};
-	struct cut_suite suite = cut_suite_declare("cut main test suite",
+	struct cut_suite suite = cut_suite_declare("cut main test suite\0",
 						   tests, ARRAY_SIZE(tests),
+						   NULL, NULL,
 						   NULL);
 
 	cut_suite_init(&suite);
