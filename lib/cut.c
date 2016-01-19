@@ -46,10 +46,13 @@ void cut_suite_run(struct cut_suite *cut_suite, unsigned long flags)
 		fprintf(stdout, "Running suite \"%s\"\n", cut_suite->name);
 		fprintf(stdout, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
 	}
-
+	if (cut_suite->set_up)
+		cut_suite->set_up(cut_suite);
 	for (i = 0; i < cut_suite->test_count; i++) {
 		cut_test_run(&cut_suite->tests[i], flags);
 	}
+	if (cut_suite->tear_down)
+		cut_suite->tear_down(cut_suite);
 
 	if (flags & CUT_VERBOSE) {
 		fprintf(stdout, "------------------------------------------\n");
