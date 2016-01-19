@@ -6,7 +6,7 @@
 #include <setjmp.h>
 #include "cut.h"
 
-void cut_assert(struct cut_test *cut_test, unsigned int condition, char *msg,
+void _cut_assert(struct cut_test *cut_test, unsigned int condition, char *msg,
 		const char *func, unsigned int line)
 {
 	if (!condition) {
@@ -15,6 +15,17 @@ void cut_assert(struct cut_test *cut_test, unsigned int condition, char *msg,
 				cut_test->name, func, line, msg);
 		longjmp(cut_test->jbuf, CUT_JUMP_ERROR);
 	}
+}
+
+void _cut_assert_int_eq(struct cut_test *cut_test, int exp, int val,
+			      const char *func, unsigned int line)
+{
+	char msg[64];
+	int cond;
+
+	cond = (exp == val);
+	snprintf(msg, 64, "Expected <%d> but got <%d>", exp, val);
+	_cut_assert(cut_test, cond, msg, func, line);
 }
 
 static void cut_test_run(struct cut_test *cut_test)

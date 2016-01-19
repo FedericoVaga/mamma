@@ -70,7 +70,15 @@ struct cut_suite {
 extern void cut_suite_init(struct cut_suite *suite);
 extern void cut_suite_run(struct cut_suite *cut_suite, unsigned long flags);
 
-extern void cut_assert(struct cut_test *cut_test, unsigned int condition,
-		       char *msg, const char *func, unsigned int line);
+extern void _cut_assert(struct cut_test *cut_test, unsigned int condition,
+			char *msg, const char *func, unsigned int line);
+#define cut_assert(_ct, _cond, _msg, _f, _l) _cut_assert((_ct), (_cond), \
+							 (_msg), __func__, \
+							 __LINE__)
+extern void _cut_assert_int_eq(struct cut_test *cut_test, int exp, int val,
+			       const char *func, unsigned int line);
+#define cut_assert_int_eq(_ct, _exp, _val) _cut_assert_int_eq((_ct), (_exp), \
+							      (_val), __func__, \
+							      __LINE__)
 
 #endif

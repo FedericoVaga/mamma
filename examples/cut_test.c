@@ -14,12 +14,12 @@ static void tear_down(struct cut_test *cut_test)
 
 static void test1(struct cut_test *cut_test)
 {
-	cut_assert(cut_test, 2+2==5, "expected 4", __func__, __LINE__);
+	cut_assert_int_eq(cut_test, 4, 5);
 }
 
 static void test2(struct cut_test *cut_test)
 {
-	cut_assert(cut_test, 2+2==4, "expected 4", __func__, __LINE__);
+	cut_assert_int_eq(cut_test, 4, 4);
 }
 
 int main(int argc, char *argv[])
