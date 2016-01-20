@@ -5,75 +5,75 @@
 #include <stdlib.h>
 #include <cut.h>
 
-static void set_up(struct cut_test *cut_test)
+static void set_up(struct m_test *m_test)
 {
 }
-static void tear_down(struct cut_test *cut_test)
+static void tear_down(struct m_test *m_test)
 {
 }
 
-static void test1(struct cut_test *cut_test)
+static void test1(struct m_test *m_test)
 {
-	cut_assert_int_eq(4, 4);
-	cut_assert_int_eq(4, 5);
+	m_assert_int_eq(4, 4);
+	m_assert_int_eq(4, 5);
 }
 
-static void test2(struct cut_test *cut_test)
+static void test2(struct m_test *m_test)
 {
-	cut_assert_int_neq(4, 5);
-	cut_assert_int_neq(4, 4);
+	m_assert_int_neq(4, 5);
+	m_assert_int_neq(4, 4);
 }
 
-static void test3(struct cut_test *cut_test)
+static void test3(struct m_test *m_test)
 {
-	cut_assert_int_range(0, 10, 4);
-	cut_assert_int_range(0, 10, 100);
+	m_assert_int_range(0, 10, 4);
+	m_assert_int_range(0, 10, 100);
 }
 
-static void test4(struct cut_test *cut_test)
+static void test4(struct m_test *m_test)
 {
 	void *ptr = NULL;
 
-	cut_assert_mem_not_null(cut_test);
-	cut_assert_mem_not_null(ptr);
+	m_assert_mem_not_null(m_test);
+	m_assert_mem_not_null(ptr);
 }
 
-static void test5(struct cut_test *cut_test)
+static void test5(struct m_test *m_test)
 {
 	void *ptr = NULL;
 
-	cut_assert_mem_null(ptr);
-	cut_assert_mem_null(cut_test);
+	m_assert_mem_null(ptr);
+	m_assert_mem_null(m_test);
 }
 
-static void test6(struct cut_test *cut_test)
+static void test6(struct m_test *m_test)
 {
-	cut_assert_int_neq(4, 5);
-	cut_assert_int_neq(4, 6);
-	cut_skip(4 == 5);
-	cut_assert_int_neq(4, 7);
-	cut_skip(5 == 5);
-	cut_assert_int_neq(4, 4);
-	cut_assert_int_neq(4, 5);
-	cut_assert_int_neq(4, 4);
+	m_assert_int_neq(4, 5);
+	m_assert_int_neq(4, 6);
+	m_skip(4 == 5);
+	m_assert_int_neq(4, 7);
+	m_skip(5 == 5);
+	m_assert_int_neq(4, 4);
+	m_assert_int_neq(4, 5);
+	m_assert_int_neq(4, 4);
 }
 
 int main(int argc, char *argv[])
 {
-	struct cut_test tests[] = {
-		cut_test(set_up, tear_down, test1, NULL),
-		cut_test(set_up, tear_down, test2, NULL),
-		cut_test(set_up, tear_down, test3, NULL),
-		cut_test(set_up, tear_down, test4, NULL),
-		cut_test(set_up, tear_down, test5, NULL),
-		cut_test(set_up, tear_down, test6, NULL),
+	struct m_test tests[] = {
+		m_test(set_up, tear_down, test1, NULL),
+		m_test(set_up, tear_down, test2, NULL),
+		m_test(set_up, tear_down, test3, NULL),
+		m_test(set_up, tear_down, test4, NULL),
+		m_test(set_up, tear_down, test5, NULL),
+		m_test(set_up, tear_down, test6, NULL),
 	};
-	struct cut_suite suite = cut_suite("cut main test suite\0",
+	struct m_suite suite = m_suite("cut main test suite\0",
 					   tests, ARRAY_SIZE(tests),
 					   NULL, NULL, NULL);
 
-	cut_suite_init(&suite);
-	cut_suite_run(&suite, CUT_VERBOSE | CUT_ERRNO);
+	m_suite_init(&suite);
+	m_suite_run(&suite, M_VERBOSE | M_ERRNO);
 
 	return 0;
 }

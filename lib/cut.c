@@ -10,7 +10,7 @@
 
 static jmp_buf global_jbuf;
 
-struct cut_assertion {
+struct m_assertion {
 	int (*condition)();
 	char *fmt;
 };
@@ -20,7 +20,7 @@ struct cut_assertion {
 /* Following all implemented test conditions - comment only when needed */
 /* -------------------------------------------------------------------- */
 
-static int __cut_assert_int_equal(va_list args)
+static int __m_assert_int_equal(va_list args)
 {
 	int a, b;
 
@@ -35,12 +35,12 @@ static int __cut_assert_int_equal(va_list args)
 	}
 }
 
-static int __cut_assert_int_not_equal(va_list args)
+static int __m_assert_int_not_equal(va_list args)
 {
-	return !__cut_assert_int_equal(args);
+	return !__m_assert_int_equal(args);
 }
 
-static int __cut_assert_int_in_range(va_list args)
+static int __m_assert_int_in_range(va_list args)
 {
 	int min, max, val;
 
@@ -56,12 +56,12 @@ static int __cut_assert_int_in_range(va_list args)
 	}
 }
 
-static int __cut_assert_int_not_in_range(va_list args)
+static int __m_assert_int_not_in_range(va_list args)
 {
-	return !__cut_assert_int_in_range(args);
+	return !__m_assert_int_in_range(args);
 }
 
-static int __cut_assert_mem_null(va_list args)
+static int __m_assert_mem_null(va_list args)
 {
 	void *ptr;
 
@@ -75,13 +75,13 @@ static int __cut_assert_mem_null(va_list args)
 	}
 }
 
-static int __cut_assert_mem_not_null(va_list args)
+static int __m_assert_mem_not_null(va_list args)
 {
-	return !__cut_assert_mem_null(args);
+	return !__m_assert_mem_null(args);
 }
 
 
-static int __cut_assert_mem_eq(va_list args)
+static int __m_assert_mem_eq(va_list args)
 {
 	void *ptr1, *ptr2;
 	size_t size;
@@ -98,9 +98,9 @@ static int __cut_assert_mem_eq(va_list args)
 	}
 }
 
-static int __cut_assert_mem_neq(va_list args)
+static int __m_assert_mem_neq(va_list args)
 {
-	return !__cut_assert_mem_eq(args);
+	return !__m_assert_mem_eq(args);
 }
 
 /* -------------------------------------------------------------------- */
@@ -112,37 +112,37 @@ static int __cut_assert_mem_neq(va_list args)
 /**
  * List of known test conditions
  */
-static const struct cut_assertion asserts[] = {
-	[CUT_INT_EQ] = {
-		.condition = __cut_assert_int_equal,
+static const struct m_assertion asserts[] = {
+	[M_INT_EQ] = {
+		.condition = __m_assert_int_equal,
 		.fmt = "Expected <%d>, but got <%d>",
 	},
-	[CUT_INT_NEQ] = {
-		.condition = __cut_assert_int_not_equal,
+	[M_INT_NEQ] = {
+		.condition = __m_assert_int_not_equal,
 		.fmt = "Expected any but not <%d>, but got <%d>",
 	},
-	[CUT_INT_RANGE] = {
-		.condition = __cut_assert_int_in_range,
+	[M_INT_RANGE] = {
+		.condition = __m_assert_int_in_range,
 		.fmt = "Expected in range [%d, %d], but got <%d>",
 	},
-	[CUT_INT_NRANGE] = {
-		.condition = __cut_assert_int_not_in_range,
+	[M_INT_NRANGE] = {
+		.condition = __m_assert_int_not_in_range,
 		.fmt = "Expected outside range [%d, %d], but got <%d>",
 	},
-	[CUT_MEM_NOT_NULL] = {
-		.condition = __cut_assert_mem_not_null,
+	[M_MEM_NOT_NULL] = {
+		.condition = __m_assert_mem_not_null,
 		.fmt = "Expected not NULL pointer, but got <%p>",
 	},
-	[CUT_MEM_NULL] = {
-		.condition = __cut_assert_mem_null,
+	[M_MEM_NULL] = {
+		.condition = __m_assert_mem_null,
 		.fmt = "Expected NULL pointer, but got <%p>"
 	},
-	[CUT_MEM_EQ] = {
-		.condition = __cut_assert_mem_eq,
+	[M_MEM_EQ] = {
+		.condition = __m_assert_mem_eq,
 		.fmt = "Expected the same memory content at addresses %p and %p (size: %z)"
 	},
-	[CUT_MEM_NEQ] = {
-		.condition = __cut_assert_mem_neq,
+	[M_MEM_NEQ] = {
+		.condition = __m_assert_mem_neq,
 		.fmt = "Expected different memory content at addresses %p and %p (size: %z)"
 	},
 };
@@ -153,18 +153,18 @@ static const struct cut_assertion asserts[] = {
  * It prints a failure message and it jumps out from the current test function
  * in order to run the next one
  */
-static void _cut_fail(enum cut_asserts type,
+static void _m_fail(enum m_asserts type,
 		      const char *func, const unsigned int line,
 		      va_list args)
 {
 	fprintf(stdout, "FAILURE@%s():%d - ", func, line);
 	vfprintf(stdout, asserts[type].fmt, args);
 	fprintf(stdout, "\n");
-	longjmp(global_jbuf, CUT_JUMP_ERROR);
+	longjmp(global_jbuf, M_JUMP_ERROR);
 }
 
 
-void ___cut_assert(enum cut_asserts type,
+void ___m_assert(enum m_asserts type,
 		   const char *func, const unsigned int line,
 		   ...)
 {
@@ -179,65 +179,65 @@ void ___cut_assert(enum cut_asserts type,
 		return;
 
 	va_start(args, line);
-	_cut_fail(type, func, line, args);
+	_m_fail(type, func, line, args);
 	va_end(args);
 }
 
-static void cut_test_run(struct cut_test *cut_test)
+static void m_test_run(struct m_test *m_test)
 {
-	cut_test->state = CUT_STATE_RUNNING;
+	m_test->state = M_STATE_RUNNING;
 	errno = 0;
 	/* Set up environment */
 	switch (setjmp(global_jbuf)) {
-	case CUT_NO_JUMP:
-		if (cut_test->set_up)
-			cut_test->set_up(cut_test);
+	case M_NO_JUMP:
+		if (m_test->set_up)
+			m_test->set_up(m_test);
 
 		/* Run the test */
-		if (cut_test->test)
-			cut_test->test(cut_test);
+		if (m_test->test)
+			m_test->test(m_test);
 
 		/* Clear the environment */
 		/* Success */
-		cut_test->state = CUT_STATE_SUCCESS;
-		cut_test->suite->success_count++;
-		if (cut_test->tear_down)
-			cut_test->tear_down(cut_test);
+		m_test->state = M_STATE_SUCCESS;
+		m_test->suite->success_count++;
+		if (m_test->tear_down)
+			m_test->tear_down(m_test);
 		break;
-	case CUT_JUMP_ERROR: /* test failed */
-		if ((cut_test->suite->flags & CUT_ERRNO) && errno) {
-			if (cut_test->suite->strerror)
+	case M_JUMP_ERROR: /* test failed */
+		if ((m_test->suite->flags & M_ERRNO) && errno) {
+			if (m_test->suite->strerror)
 				fprintf(stdout, "\tError %d: %s\n",
-					errno, cut_test->suite->strerror(errno));
+					errno, m_test->suite->strerror(errno));
 			else
 				fprintf(stdout, "\tError %d: %s\n",
 					errno, strerror(errno));
 		}
-		cut_test->state = CUT_STATE_ERROR;
-		cut_test->suite->fail_count++;
+		m_test->state = M_STATE_ERROR;
+		m_test->suite->fail_count++;
 
-		if (cut_test->tear_down)
-			cut_test->tear_down(cut_test);
+		if (m_test->tear_down)
+			m_test->tear_down(m_test);
 		break;
-	case CUT_JUMP_SKIP:
-		cut_test->state = CUT_STATE_SKIP;
-		cut_test->suite->skip_count++;
+	case M_JUMP_SKIP:
+		m_test->state = M_STATE_SKIP;
+		m_test->suite->skip_count++;
 
-		if (cut_test->tear_down)
-			cut_test->tear_down(cut_test);
+		if (m_test->tear_down)
+			m_test->tear_down(m_test);
 		break;
-	case CUT_JUMP_TEAR_FAIL: /* test fine, but something is wrong */
+	case M_JUMP_TEAR_FAIL: /* test fine, but something is wrong */
 		break;
 	}
 }
 
 
-void _cut_skip_test(unsigned int cond, const char *func, const unsigned int line)
+void _m_skip_test(unsigned int cond, const char *func, const unsigned int line)
 {
 	if (!cond)
 		return;
 	fprintf(stdout, "SKIP@%s():%d\n", func, line);
-	longjmp(global_jbuf, CUT_JUMP_SKIP);
+	longjmp(global_jbuf, M_JUMP_SKIP);
 }
 
 /**
@@ -245,12 +245,12 @@ void _cut_skip_test(unsigned int cond, const char *func, const unsigned int line
  *
  * @param[in] name suite name
  */
-void cut_suite_init(struct cut_suite *suite)
+void m_suite_init(struct m_suite *suite)
 {
 	int i;
 
 	for (i = 0; i < suite->test_count; i++) {
-		suite->tests[i].state = CUT_STATE_STOP;
+		suite->tests[i].state = M_STATE_STOP;
 		suite->tests[i].suite = suite;
 	}
 }
@@ -258,36 +258,36 @@ void cut_suite_init(struct cut_suite *suite)
 
 /**
  * It runs all the tests within the given suite
- * @param[in] cut_suite the suite to run
+ * @param[in] m_suite the suite to run
  */
-void cut_suite_run(struct cut_suite *cut_suite, unsigned long flags)
+void m_suite_run(struct m_suite *m_suite, unsigned long flags)
 {
 	int i;
 
-	cut_suite->flags = flags;
-	cut_suite->success_count = 0;
-	cut_suite->fail_count = 0;
-	cut_suite->skip_count = 0;
+	m_suite->flags = flags;
+	m_suite->success_count = 0;
+	m_suite->fail_count = 0;
+	m_suite->skip_count = 0;
 
-	if (flags & CUT_VERBOSE) {
-		fprintf(stdout, "Running suite \"%s\"\n", cut_suite->name);
+	if (flags & M_VERBOSE) {
+		fprintf(stdout, "Running suite \"%s\"\n", m_suite->name);
 		fprintf(stdout, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
 	}
 
-	if (cut_suite->set_up)
-		cut_suite->set_up(cut_suite);
-	for (i = 0; i < cut_suite->test_count; i++) {
+	if (m_suite->set_up)
+		m_suite->set_up(m_suite);
+	for (i = 0; i < m_suite->test_count; i++) {
 		/* Run test */
-		cut_test_run(&cut_suite->tests[i]);
+		m_test_run(&m_suite->tests[i]);
 	}
-	if (cut_suite->tear_down)
-		cut_suite->tear_down(cut_suite);
+	if (m_suite->tear_down)
+		m_suite->tear_down(m_suite);
 
-	if (flags & CUT_VERBOSE) {
+	if (flags & M_VERBOSE) {
 		fprintf(stdout, "------------------------------------------\n");
-		fprintf(stdout, "Success %d\n", cut_suite->success_count);
-		fprintf(stdout, "Fail    %d\n", cut_suite->fail_count);
-		fprintf(stdout, "Skip    %d\n", cut_suite->skip_count);
+		fprintf(stdout, "Success %d\n", m_suite->success_count);
+		fprintf(stdout, "Fail    %d\n", m_suite->fail_count);
+		fprintf(stdout, "Skip    %d\n", m_suite->skip_count);
 		fprintf(stdout, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
 	}
 
