@@ -20,7 +20,7 @@ struct m_assertion {
 /* Following all implemented test conditions - comment only when needed */
 /* -------------------------------------------------------------------- */
 
-static int __m_assert_int_equal(va_list args)
+static int m_cond_int_equal(va_list args)
 {
 	int a, b;
 
@@ -35,12 +35,12 @@ static int __m_assert_int_equal(va_list args)
 	}
 }
 
-static int __m_assert_int_not_equal(va_list args)
+static int m_cond_int_not_equal(va_list args)
 {
-	return !__m_assert_int_equal(args);
+	return !m_cond_int_equal(args);
 }
 
-static int __m_assert_int_in_range(va_list args)
+static int m_cond_int_in_range(va_list args)
 {
 	int min, max, val;
 
@@ -56,12 +56,12 @@ static int __m_assert_int_in_range(va_list args)
 	}
 }
 
-static int __m_assert_int_not_in_range(va_list args)
+static int m_cond_int_not_in_range(va_list args)
 {
-	return !__m_assert_int_in_range(args);
+	return !m_cond_int_in_range(args);
 }
 
-static int __m_assert_ptr_null(va_list args)
+static int m_cond_ptr_null(va_list args)
 {
 	void *ptr;
 
@@ -75,13 +75,13 @@ static int __m_assert_ptr_null(va_list args)
 	}
 }
 
-static int __m_assert_ptr_not_null(va_list args)
+static int m_cond_ptr_not_null(va_list args)
 {
-	return !__m_assert_ptr_null(args);
+	return !m_cond_ptr_null(args);
 }
 
 
-static int __m_assert_mem_eq(va_list args)
+static int m_cond_mem_eq(va_list args)
 {
 	void *ptr1, *ptr2;
 	size_t size;
@@ -98,9 +98,9 @@ static int __m_assert_mem_eq(va_list args)
 	}
 }
 
-static int __m_assert_mem_neq(va_list args)
+static int m_cond_mem_neq(va_list args)
 {
-	return !__m_assert_mem_eq(args);
+	return !m_cond_mem_eq(args);
 }
 
 /* -------------------------------------------------------------------- */
@@ -114,35 +114,35 @@ static int __m_assert_mem_neq(va_list args)
  */
 static const struct m_assertion asserts[] = {
 	[M_INT_EQ] = {
-		.condition = __m_assert_int_equal,
+		.condition = m_cond_int_equal,
 		.fmt = "Expected <%d>, but got <%d>",
 	},
 	[M_INT_NEQ] = {
-		.condition = __m_assert_int_not_equal,
+		.condition = m_cond_int_not_equal,
 		.fmt = "Expected any but not <%d>, but got <%d>",
 	},
 	[M_INT_RANGE] = {
-		.condition = __m_assert_int_in_range,
+		.condition = m_cond_int_in_range,
 		.fmt = "Expected in range [%d, %d], but got <%d>",
 	},
 	[M_INT_NRANGE] = {
-		.condition = __m_assert_int_not_in_range,
+		.condition = m_cond_int_not_in_range,
 		.fmt = "Expected outside range [%d, %d], but got <%d>",
 	},
 	[M_PTR_NOT_NULL] = {
-		.condition = __m_assert_ptr_not_null,
+		.condition = m_cond_ptr_not_null,
 		.fmt = "Expected not NULL pointer, but got <%p>",
 	},
 	[M_PTR_NULL] = {
-		.condition = __m_assert_ptr_null,
+		.condition = m_cond_ptr_null,
 		.fmt = "Expected NULL pointer, but got <%p>"
 	},
 	[M_MEM_EQ] = {
-		.condition = __m_assert_mem_eq,
+		.condition = m_cond_mem_eq,
 		.fmt = "Expected the same memory content at addresses %p and %p (size: %z)"
 	},
 	[M_MEM_NEQ] = {
-		.condition = __m_assert_mem_neq,
+		.condition = m_cond_mem_neq,
 		.fmt = "Expected different memory content at addresses %p and %p (size: %z)"
 	},
 };
