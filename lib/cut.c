@@ -16,6 +16,9 @@ struct cut_assertion {
 };
 
 
+/* -------------------------------------------------------------------- */
+/* Following all implemented test conditions - comment only when needed */
+/* -------------------------------------------------------------------- */
 
 static int __cut_assert_int_equal(va_list args)
 {
@@ -99,6 +102,11 @@ static int __cut_assert_mem_neq(va_list args)
 {
 	return !__cut_assert_mem_eq(args);
 }
+
+/* -------------------------------------------------------------------- */
+/*                Finish of test conditions implementation              */
+/* -------------------------------------------------------------------- */
+
 
 
 /**
