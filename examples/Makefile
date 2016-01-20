@@ -1,7 +1,7 @@
-PROGRAMS := cut_test
+PROGRAMS := mamma_test
 
-CFLAGS := -Wall -Werror -ggdb -O2 -I$(CUT)/lib $(EXTRACFLAGS)
-LDFLAGS := -L$(CUT)/lib -lcut
+CFLAGS := -Wall -Werror -ggdb -O2 -I$(MAMMA)/lib $(EXTRACFLAGS)
+LDFLAGS := -L$(MAMMA)/lib -lmamma
 
 all: $(PROGRAMS)
 

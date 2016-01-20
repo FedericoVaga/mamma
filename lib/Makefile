@@ -1,6 +1,6 @@
-LIB := libcut.a
-LIBS := libcut.so
-LOBJ := cut.o
+LIB := libmamma.a
+LIBS := libmamma.so
+LOBJ := mamma.o
 
 CFLAGS := -Wall -Werror -O2 -ggdb -fPIC $(EXTRACFLAGS)
 LDFLAGS := -L. -lcut

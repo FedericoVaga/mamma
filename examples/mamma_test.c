@@ -3,7 +3,7 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
-#include <cut.h>
+#include <mamma.h>
 
 static void set_up(struct m_test *m_test)
 {

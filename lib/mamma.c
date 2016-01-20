@@ -6,7 +6,7 @@
 #include <setjmp.h>
 #include <stdarg.h>
 #include <errno.h>
-#include "cut.h"
+#include "mamma.h"
 
 static jmp_buf global_jbuf;
 
