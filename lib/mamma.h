@@ -129,6 +129,14 @@ void ___m_assert(enum m_asserts type,
 	___m_assert(M_INT_EQ, (__func__), (__LINE__), (_exp), (_val))
 #define m_assert_int_neq(_exp, _val)					\
 	___m_assert(M_INT_NEQ, (__func__), (__LINE__), (_exp), (_val))
+#define m_assert_int_gt(_exp, _val)					\
+	___m_assert(M_INT_GT, (__func__), (__LINE__), (_exp), (_val))
+#define m_assert_int_ge(_exp, _val)					\
+	___m_assert(M_INT_GE, (__func__), (__LINE__), (_exp), (_val))
+#define m_assert_int_lt(_exp, _val)					\
+	___m_assert(M_INT_LT, (__func__), (__LINE__), (_exp), (_val))
+#define m_assert_int_le(_exp, _val)					\
+	___m_assert(M_INT_LE, (__func__), (__LINE__), (_exp), (_val))
 #define m_assert_int_range(_min, _max, _val)				\
 	___m_assert(M_INT_RANGE, (__func__), (__LINE__), (_min), (_max), (_val))
 #define m_assert_int_nrange(_min, _max, _val)				\

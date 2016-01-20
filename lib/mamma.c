@@ -40,6 +40,43 @@ static int m_cond_int_not_equal(va_list args)
 	return !m_cond_int_equal(args);
 }
 
+static int m_cond_int_greater_than(va_list args)
+{
+	int a, b;
+
+	a = va_arg(args, int);
+	b = va_arg(args, int);
+
+	if (a > b) {
+		return 1;
+	} else {
+		errno = EINVAL;
+		return 0;
+	}
+}
+
+static int m_cond_int_greater_equal(va_list args)
+{
+	va_list args_bis;
+	int cond;
+
+	va_copy(args_bis, args);
+	cond = (m_cond_int_greater_than(args) || m_cond_int_equal(args_bis));
+	va_end(args_bis);
+
+	return cond;
+}
+
+static int m_cond_int_less_than(va_list args)
+{
+	return !m_cond_int_greater_equal(args);
+}
+
+static int m_cond_int_less_equal(va_list args)
+{
+	return !m_cond_int_greater_than(args);
+}
+
 static int m_cond_int_in_range(va_list args)
 {
 	int min, max, val;
@@ -128,6 +165,22 @@ static const struct m_assertion asserts[] = {
 	[M_INT_NRANGE] = {
 		.condition = m_cond_int_not_in_range,
 		.fmt = "Expected outside range [%d, %d], but got <%d>",
+	},
+	[M_INT_GT] = {
+		.condition = m_cond_int_greater_than,
+		.fmt = "Expected <%d> greater than <%d>",
+	},
+	[M_INT_GE] = {
+		.condition = m_cond_int_greater_equal,
+		.fmt = "Expected <%d> greater or equal than <%d>",
+	},
+	[M_INT_LT] = {
+		.condition = m_cond_int_less_than,
+		.fmt = "Expected <%d> less than <%d>",
+	},
+	[M_INT_LE] = {
+		.condition = m_cond_int_less_equal,
+		.fmt = "Expected <%d> less or equal than <%d>",
 	},
 	[M_PTR_NOT_NULL] = {
 		.condition = m_cond_ptr_not_null,

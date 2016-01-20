@@ -15,7 +15,15 @@ static void tear_down(struct m_test *m_test)
 static void test1(struct m_test *m_test)
 {
 	m_assert_int_eq(4, 4);
-	m_assert_int_eq(4, 5);
+	m_assert_int_neq(4, 5);
+	m_assert_int_gt(5, 4);
+	m_assert_int_ge(5, 4);
+	m_assert_int_ge(5, 5);
+	m_assert_int_lt(4, 5);
+	m_assert_int_le(4, 5);
+	m_assert_int_le(5, 5);
+	m_assert_int_range(0, 10, 4);
+	m_assert_int_nrange(0, 10, 15);
 }
 
 static void test2(struct m_test *m_test)
