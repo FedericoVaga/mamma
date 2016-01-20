@@ -14,10 +14,36 @@ enum m_asserts {
 	M_INT_NEQ ,
 	M_INT_RANGE,
 	M_INT_NRANGE,
-	M_MEM_NOT_NULL,
-	M_MEM_NULL,
+	M_INT_GT,
+	M_INT_GE,
+	M_INT_LT,
+	M_INT_LE,
+	M_FLT_EQ,
+	M_FLT_NEQ ,
+	M_FLT_RANGE,
+	M_FLT_NRANGE,
+	M_FLT_GT,
+	M_FLT_GE,
+	M_FLT_LT,
+	M_FLT_LE,
+	M_STR_EQ,
+	M_STR_NEQ ,
+	M_STR_RANGE,
+	M_STR_NRANGE,
+	M_STR_GT,
+	M_STR_GE,
+	M_STR_LT,
+	M_STR_LE,
+	M_PTR_NOT_NULL,
+	M_PTR_NULL,
 	M_MEM_EQ,
 	M_MEM_NEQ,
+	M_MEM_RANGE,
+	M_MEM_NRANGE,
+	M_MEM_GT,
+	M_MEM_GE,
+	M_MEM_LT,
+	M_MEM_LE,
 	__M_MAX_STANDARD_ASSERTION,
 };
 
@@ -114,9 +140,9 @@ void ___m_assert(enum m_asserts type,
  */
 
 #define m_assert_mem_not_null(_ptr)					\
-	___m_assert(M_MEM_NOT_NULL, (__func__), (__LINE__), (_ptr))
+	___m_assert(M_PTR_NOT_NULL, (__func__), (__LINE__), (_ptr))
 #define m_assert_mem_null(_ptr)					\
-	___m_assert(M_MEM_NULL, (__func__), (__LINE__), (_ptr))
+	___m_assert(M_PTR_NULL, (__func__), (__LINE__), (_ptr))
 #define m_assert_mem_eq(_ptr1, _ptr2, _size)				\
 	___m_assert(M_MEM_EQ, (__func__), (__LINE__), (_ptr1), (_ptr2), (_size))
 #define m_assert_mem_neq(_ptr1, _ptr2, _size)				\

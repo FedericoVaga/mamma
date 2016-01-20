@@ -61,7 +61,7 @@ static int __m_assert_int_not_in_range(va_list args)
 	return !__m_assert_int_in_range(args);
 }
 
-static int __m_assert_mem_null(va_list args)
+static int __m_assert_ptr_null(va_list args)
 {
 	void *ptr;
 
@@ -75,9 +75,9 @@ static int __m_assert_mem_null(va_list args)
 	}
 }
 
-static int __m_assert_mem_not_null(va_list args)
+static int __m_assert_ptr_not_null(va_list args)
 {
-	return !__m_assert_mem_null(args);
+	return !__m_assert_ptr_null(args);
 }
 
 
@@ -129,12 +129,12 @@ static const struct m_assertion asserts[] = {
 		.condition = __m_assert_int_not_in_range,
 		.fmt = "Expected outside range [%d, %d], but got <%d>",
 	},
-	[M_MEM_NOT_NULL] = {
-		.condition = __m_assert_mem_not_null,
+	[M_PTR_NOT_NULL] = {
+		.condition = __m_assert_ptr_not_null,
 		.fmt = "Expected not NULL pointer, but got <%p>",
 	},
-	[M_MEM_NULL] = {
-		.condition = __m_assert_mem_null,
+	[M_PTR_NULL] = {
+		.condition = __m_assert_ptr_null,
 		.fmt = "Expected NULL pointer, but got <%p>"
 	},
 	[M_MEM_EQ] = {
