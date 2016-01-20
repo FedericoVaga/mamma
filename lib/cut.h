@@ -26,11 +26,13 @@ enum cut_test_state {
 	CUT_STATE_RUNNING,
 	CUT_STATE_ERROR,
 	CUT_STATE_SUCCESS,
+	CUT_STATE_SKIP,
 };
 
 enum cut_test_jump_conditions {
 	CUT_NO_JUMP = 0,
 	CUT_JUMP_ERROR,
+	CUT_JUMP_SKIP,
 	CUT_JUMP_TEAR_FAIL,
 };
 
@@ -64,6 +66,7 @@ struct cut_suite {
 	char *(*strerror)(int errnum);
 	unsigned int success_count;
 	unsigned int fail_count;
+	unsigned int skip_count;
 };
 #define cut_suite(_name, _test, _test_count, _up, _down, _priv) {	\
 		.name = (_name),					\
@@ -82,8 +85,11 @@ extern void cut_suite_run(struct cut_suite *cut_suite, unsigned long flags);
 
 extern void _cut_assert(unsigned int condition, char *msg,
 			const char *func, const unsigned int line);
-#define cut_assert(_cond, _msg, _f, _l) \
+extern void _cut_skip_test(unsigned int cond,
+			   const char *func, const unsigned int line);
+#define cut_assert(_cond, _msg, _f, _l)	\
 	_cut_assert((_cond), (_msg), __func__, __LINE__)
+#define cut_skip(_cond) _cut_skip_test((_cond), __func__, __LINE__)
 
 
 /**

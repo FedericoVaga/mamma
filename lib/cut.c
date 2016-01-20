@@ -207,14 +207,30 @@ static void cut_test_run(struct cut_test *cut_test)
 		}
 		cut_test->state = CUT_STATE_ERROR;
 		cut_test->suite->fail_count++;
+
 		if (cut_test->tear_down)
 			cut_test->tear_down(cut_test);
+		break;
+	case CUT_JUMP_SKIP:
+		cut_test->state = CUT_STATE_SKIP;
+		cut_test->suite->skip_count++;
 
+		if (cut_test->tear_down)
+			cut_test->tear_down(cut_test);
+		break;
 	case CUT_JUMP_TEAR_FAIL: /* test fine, but something is wrong */
 		break;
 	}
 }
 
+
+void _cut_skip_test(unsigned int cond, const char *func, const unsigned int line)
+{
+	if (!cond)
+		return;
+	fprintf(stdout, "SKIP@%s():%d\n", func, line);
+	longjmp(global_jbuf, CUT_JUMP_SKIP);
+}
 
 /**
  * It creates a test suite, in other words a collection of tests.
@@ -243,6 +259,7 @@ void cut_suite_run(struct cut_suite *cut_suite, unsigned long flags)
 	cut_suite->flags = flags;
 	cut_suite->success_count = 0;
 	cut_suite->fail_count = 0;
+	cut_suite->skip_count = 0;
 
 	if (flags & CUT_VERBOSE) {
 		fprintf(stdout, "Running suite \"%s\"\n", cut_suite->name);
@@ -262,6 +279,7 @@ void cut_suite_run(struct cut_suite *cut_suite, unsigned long flags)
 		fprintf(stdout, "------------------------------------------\n");
 		fprintf(stdout, "Success %d\n", cut_suite->success_count);
 		fprintf(stdout, "Fail    %d\n", cut_suite->fail_count);
+		fprintf(stdout, "Skip    %d\n", cut_suite->skip_count);
 		fprintf(stdout, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
 	}
 

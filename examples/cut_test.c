@@ -46,6 +46,18 @@ static void test5(struct cut_test *cut_test)
 	cut_assert_mem_null(cut_test);
 }
 
+static void test6(struct cut_test *cut_test)
+{
+	cut_assert_int_neq(4, 5);
+	cut_assert_int_neq(4, 6);
+	cut_skip(4 == 5);
+	cut_assert_int_neq(4, 7);
+	cut_skip(5 == 5);
+	cut_assert_int_neq(4, 4);
+	cut_assert_int_neq(4, 5);
+	cut_assert_int_neq(4, 4);
+}
+
 int main(int argc, char *argv[])
 {
 	struct cut_test tests[] = {
@@ -54,6 +66,7 @@ int main(int argc, char *argv[])
 		cut_test(set_up, tear_down, test3, NULL),
 		cut_test(set_up, tear_down, test4, NULL),
 		cut_test(set_up, tear_down, test5, NULL),
+		cut_test(set_up, tear_down, test6, NULL),
 	};
 	struct cut_suite suite = cut_suite("cut main test suite\0",
 					   tests, ARRAY_SIZE(tests),
