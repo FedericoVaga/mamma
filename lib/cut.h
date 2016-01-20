@@ -61,6 +61,7 @@ struct cut_suite {
 	const unsigned int test_count; /**< number of valid tests */
 	void (*set_up)(struct cut_suite *cut_suite);
 	void (*tear_down)(struct cut_suite *cut_suite);
+	char *(*strerror)(int errnum);
 	unsigned int success_count;
 	unsigned int fail_count;
 };

@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
 					   NULL, NULL, NULL);
 
 	cut_suite_init(&suite);
-	cut_suite_run(&suite, CUT_VERBOSE);
+	cut_suite_run(&suite, CUT_VERBOSE | CUT_ERRNO);
 
 	return 0;
 }

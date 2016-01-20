@@ -5,6 +5,7 @@
 #include <string.h>
 #include <setjmp.h>
 #include <stdarg.h>
+#include <errno.h>
 #include "cut.h"
 
 static jmp_buf global_jbuf;
@@ -23,7 +24,12 @@ static int __cut_assert_int_equal(va_list args)
 	a = va_arg(args, int);
 	b = va_arg(args, int);
 
-	return (a == b);
+	if (a == b) {
+		return 1;
+	} else {
+		errno = EINVAL;
+		return 0;
+	}
 }
 
 static int __cut_assert_int_not_equal(va_list args)
@@ -39,7 +45,12 @@ static int __cut_assert_int_in_range(va_list args)
 	max = va_arg(args, int);
 	val = va_arg(args, int);
 
-	return (min <= val && val <= max);
+	if (min <= val && val <= max) {
+		return 1;
+	} else {
+		errno = EINVAL;
+		return 0;
+	}
 }
 
 static int __cut_assert_int_not_in_range(va_list args)
@@ -53,7 +64,12 @@ static int __cut_assert_mem_null(va_list args)
 
 	ptr = va_arg(args, void*);
 
-	return (ptr == NULL);
+	if (ptr == NULL) {
+		return 1;
+	} else {
+		errno = EINVAL;
+		return 0;
+	}
 }
 
 static int __cut_assert_mem_not_null(va_list args)
@@ -71,7 +87,12 @@ static int __cut_assert_mem_eq(va_list args)
 	ptr2 = va_arg(args, void*);
 	size = va_arg(args, size_t);
 
-	return (memcmp(ptr1, ptr2, size) == 0);
+	if (memcmp(ptr1, ptr2, size) == 0) {
+		return 1;
+	} else {
+		errno = EINVAL;
+		return 0;
+	}
 }
 
 static int __cut_assert_mem_neq(va_list args)
@@ -157,7 +178,7 @@ void ___cut_assert(enum cut_asserts type,
 static void cut_test_run(struct cut_test *cut_test)
 {
 	cut_test->state = CUT_STATE_RUNNING;
-
+	errno = 0;
 	/* Set up environment */
 	switch (setjmp(global_jbuf)) {
 	case CUT_NO_JUMP:
@@ -176,6 +197,14 @@ static void cut_test_run(struct cut_test *cut_test)
 			cut_test->tear_down(cut_test);
 		break;
 	case CUT_JUMP_ERROR: /* test failed */
+		if ((cut_test->suite->flags & CUT_ERRNO) && errno) {
+			if (cut_test->suite->strerror)
+				fprintf(stdout, "\tError %d: %s\n",
+					errno, cut_test->suite->strerror(errno));
+			else
+				fprintf(stdout, "\tError %d: %s\n",
+					errno, strerror(errno));
+		}
 		cut_test->state = CUT_STATE_ERROR;
 		cut_test->suite->fail_count++;
 		if (cut_test->tear_down)
