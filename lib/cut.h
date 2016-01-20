@@ -16,6 +16,8 @@ enum cut_asserts {
 	CUT_INT_NRANGE,
 	CUT_MEM_NOT_NULL,
 	CUT_MEM_NULL,
+	CUT_MEM_EQ,
+	CUT_MEM_NEQ,
 	__CUT_MAX_STANDARD_ASSERTION,
 };
 
@@ -90,13 +92,13 @@ void ___cut_assert(enum cut_asserts type,
 		   const char *func, const unsigned int line,
 		   ...);
 
-#define cut_assert_int_eq(_exp, _val) \
+#define cut_assert_int_eq(_exp, _val)					\
 	___cut_assert(CUT_INT_EQ, (__func__), (__LINE__), (_exp), (_val))
-#define cut_assert_int_neq(_exp, _val) \
+#define cut_assert_int_neq(_exp, _val)					\
 	___cut_assert(CUT_INT_NEQ, (__func__), (__LINE__), (_exp), (_val))
-#define cut_assert_int_range(_min, _max, _val) \
+#define cut_assert_int_range(_min, _max, _val)				\
 	___cut_assert(CUT_INT_RANGE, (__func__), (__LINE__), (_min), (_max), (_val))
-#define cut_assert_int_nrange(_min, _max, _val) \
+#define cut_assert_int_nrange(_min, _max, _val)				\
 	___cut_assert(CUT_INT_NRANGE, (__func__), (__LINE__), (_min), (_max), (_val))
 /** @} */
 
@@ -104,10 +106,13 @@ void ___cut_assert(enum cut_asserts type,
  * @defgroup cut_assert_mem Memory Assertions
  */
 
-#define cut_assert_mem_not_null(_ptr) \
+#define cut_assert_mem_not_null(_ptr)					\
 	___cut_assert(CUT_MEM_NOT_NULL, (__func__), (__LINE__), (_ptr))
-#define cut_assert_mem_null(_ptr) \
+#define cut_assert_mem_null(_ptr)					\
 	___cut_assert(CUT_MEM_NULL, (__func__), (__LINE__), (_ptr))
-
+#define cut_assert_mem_eq(_ptr1, _ptr2, _size)				\
+	___cut_assert(CUT_MEM_EQ, (__func__), (__LINE__), (_ptr1), (_ptr2), (_size))
+#define cut_assert_mem_neq(_ptr1, _ptr2, _size)				\
+	___cut_assert(CUT_MEM_NEQ, (__func__), (__LINE__), (_ptr1), (_ptr2), (_size))
 /** @} */
 #endif

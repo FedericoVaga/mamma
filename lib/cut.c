@@ -28,12 +28,7 @@ static int __cut_assert_int_equal(va_list args)
 
 static int __cut_assert_int_not_equal(va_list args)
 {
-	int a, b;
-
-	a = va_arg(args, int);
-	b = va_arg(args, int);
-
-	return (a != b);
+	return !__cut_assert_int_equal(args);
 }
 
 static int __cut_assert_int_in_range(va_list args)
@@ -49,22 +44,7 @@ static int __cut_assert_int_in_range(va_list args)
 
 static int __cut_assert_int_not_in_range(va_list args)
 {
-	int min, max, val;
-
-	min = va_arg(args, int);
-	max = va_arg(args, int);
-	val = va_arg(args, int);
-
-	return (min > val || val > max);
-}
-
-static int __cut_assert_mem_not_null(va_list args)
-{
-	void *ptr;
-
-	ptr = va_arg(args, void*);
-
-	return (ptr != NULL);
+	return !__cut_assert_int_in_range(args);
 }
 
 static int __cut_assert_mem_null(va_list args)
@@ -75,6 +55,30 @@ static int __cut_assert_mem_null(va_list args)
 
 	return (ptr == NULL);
 }
+
+static int __cut_assert_mem_not_null(va_list args)
+{
+	return !__cut_assert_mem_null(args);
+}
+
+
+static int __cut_assert_mem_eq(va_list args)
+{
+	void *ptr1, *ptr2;
+	size_t size;
+
+	ptr1 = va_arg(args, void*);
+	ptr2 = va_arg(args, void*);
+	size = va_arg(args, size_t);
+
+	return (memcmp(ptr1, ptr2, size) == 0);
+}
+
+static int __cut_assert_mem_neq(va_list args)
+{
+	return !__cut_assert_mem_eq(args);
+}
+
 
 /**
  * List of known test conditions
@@ -98,11 +102,19 @@ static const struct cut_assertion asserts[] = {
 	},
 	[CUT_MEM_NOT_NULL] = {
 		.condition = __cut_assert_mem_not_null,
-		.fmt = "Expected not NULL pointer <%p>",
+		.fmt = "Expected not NULL pointer, but got <%p>",
 	},
 	[CUT_MEM_NULL] = {
 		.condition = __cut_assert_mem_null,
-		.fmt = "Expected NULL pointer <%p>"
+		.fmt = "Expected NULL pointer, but got <%p>"
+	},
+	[CUT_MEM_EQ] = {
+		.condition = __cut_assert_mem_eq,
+		.fmt = "Expected the same memory content at addresses %p and %p (size: %z)"
+	},
+	[CUT_MEM_NEQ] = {
+		.condition = __cut_assert_mem_neq,
+		.fmt = "Expected different memory content at addresses %p and %p (size: %z)"
 	},
 };
 
