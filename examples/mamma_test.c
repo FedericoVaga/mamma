@@ -24,6 +24,16 @@ static void test1(struct m_test *m_test)
 	m_assert_int_le(5, 5);
 	m_assert_int_range(0, 10, 4);
 	m_assert_int_nrange(0, 10, 15);
+	m_assert_dbl_eq(4.123456, 4.123456);
+	m_assert_dbl_neq(4.21453523, 4.657454);
+	m_assert_dbl_gt(5.12433522, 5.023545);
+	m_assert_dbl_ge(5.12312, 4.1231);
+	m_assert_dbl_ge(5.556, 5.556);
+	m_assert_dbl_lt(4.34234, 4.93243);
+	m_assert_dbl_le(4.143234, 4.54352);
+	m_assert_dbl_le(5.123, 5.123);
+	m_assert_dbl_range(0, 1, 0.12425435);
+	m_assert_dbl_nrange(0, 1, 1.12312);
 }
 
 static void test2(struct m_test *m_test)

@@ -44,8 +44,8 @@ static int m_cond_int_greater_than(va_list args)
 {
 	int a, b;
 
-	a = va_arg(args, int);
-	b = va_arg(args, int);
+	a = va_arg(args, double);
+	b = va_arg(args, double);
 
 	if (a > b) {
 		return 1;
@@ -81,9 +81,9 @@ static int m_cond_int_in_range(va_list args)
 {
 	int min, max, val;
 
-	min = va_arg(args, int);
-	max = va_arg(args, int);
-	val = va_arg(args, int);
+	min = va_arg(args, double);
+	max = va_arg(args, double);
+	val = va_arg(args, double);
 
 	if (min <= val && val <= max) {
 		return 1;
@@ -97,6 +97,87 @@ static int m_cond_int_not_in_range(va_list args)
 {
 	return !m_cond_int_in_range(args);
 }
+
+
+static int m_cond_dbl_equal(va_list args)
+{
+	int a, b;
+
+	a = va_arg(args, double);
+	b = va_arg(args, double);
+
+	if (a == b) {
+		return 1;
+	} else {
+		errno = EINVAL;
+		return 0;
+	}
+}
+
+static int m_cond_dbl_not_equal(va_list args)
+{
+	return !m_cond_int_equal(args);
+}
+
+static int m_cond_dbl_greater_than(va_list args)
+{
+	int a, b;
+
+	a = va_arg(args, double);
+	b = va_arg(args, double);
+
+	if (a > b) {
+		return 1;
+	} else {
+		errno = EINVAL;
+		return 0;
+	}
+}
+
+static int m_cond_dbl_greater_equal(va_list args)
+{
+	va_list args_bis;
+	int cond;
+
+	va_copy(args_bis, args);
+	cond = (m_cond_dbl_greater_than(args) || m_cond_dbl_equal(args_bis));
+	va_end(args_bis);
+
+	return cond;
+}
+
+static int m_cond_dbl_less_than(va_list args)
+{
+	return !m_cond_dbl_greater_equal(args);
+}
+
+static int m_cond_dbl_less_equal(va_list args)
+{
+	return !m_cond_dbl_greater_than(args);
+}
+
+static int m_cond_dbl_in_range(va_list args)
+{
+	int min, max, val;
+
+	min = va_arg(args, int);
+	max = va_arg(args, int);
+	val = va_arg(args, int);
+
+	if (min <= val && val <= max) {
+		return 1;
+	} else {
+		errno = EINVAL;
+		return 0;
+	}
+}
+
+static int m_cond_dbl_not_in_range(va_list args)
+{
+	return !m_cond_dbl_in_range(args);
+}
+
+
 
 static int m_cond_ptr_null(va_list args)
 {
@@ -181,6 +262,38 @@ static const struct m_assertion asserts[] = {
 	[M_INT_LE] = {
 		.condition = m_cond_int_less_equal,
 		.fmt = "Expected <%d> less or equal than <%d>",
+	},
+	[M_DBL_EQ] = {
+		.condition = m_cond_dbl_equal,
+		.fmt = "Expected <%f>, but got <%f>",
+	},
+	[M_DBL_NEQ] = {
+		.condition = m_cond_dbl_not_equal,
+		.fmt = "Expected any but not <%f>, but got <%f>",
+	},
+	[M_DBL_RANGE] = {
+		.condition = m_cond_dbl_in_range,
+		.fmt = "Expected in range [%f, %f], but got <%f>",
+	},
+	[M_DBL_NRANGE] = {
+		.condition = m_cond_dbl_not_in_range,
+		.fmt = "Expected outside range [%f, %f], but got <%f>",
+	},
+	[M_DBL_GT] = {
+		.condition = m_cond_dbl_greater_than,
+		.fmt = "Expected <%f> greater than <%f>",
+	},
+	[M_DBL_GE] = {
+		.condition = m_cond_dbl_greater_equal,
+		.fmt = "Expected <%f> greater or equal than <%f>",
+	},
+	[M_DBL_LT] = {
+		.condition = m_cond_dbl_less_than,
+		.fmt = "Expected <%f> less than <%f>",
+	},
+	[M_DBL_LE] = {
+		.condition = m_cond_dbl_less_equal,
+		.fmt = "Expected <%f> less or equal than <%f>",
 	},
 	[M_PTR_NOT_NULL] = {
 		.condition = m_cond_ptr_not_null,

@@ -18,14 +18,14 @@ enum m_asserts {
 	M_INT_GE,
 	M_INT_LT,
 	M_INT_LE,
-	M_FLT_EQ,
-	M_FLT_NEQ ,
-	M_FLT_RANGE,
-	M_FLT_NRANGE,
-	M_FLT_GT,
-	M_FLT_GE,
-	M_FLT_LT,
-	M_FLT_LE,
+	M_DBL_EQ,
+	M_DBL_NEQ ,
+	M_DBL_RANGE,
+	M_DBL_NRANGE,
+	M_DBL_GT,
+	M_DBL_GE,
+	M_DBL_LT,
+	M_DBL_LE,
 	M_STR_EQ,
 	M_STR_NEQ ,
 	M_STR_RANGE,
@@ -142,6 +142,26 @@ void ___m_assert(enum m_asserts type,
 #define m_assert_int_nrange(_min, _max, _val)				\
 	___m_assert(M_INT_NRANGE, (__func__), (__LINE__), (_min), (_max), (_val))
 /** @} */
+/**
+ * @defgroup m_assert_dbl Float Assertions
+ */
+#define m_assert_dbl_eq(_exp, _val)					\
+	___m_assert(M_DBL_EQ, (__func__), (__LINE__), (_exp), (_val))
+#define m_assert_dbl_neq(_exp, _val)					\
+	___m_assert(M_DBL_NEQ, (__func__), (__LINE__), (_exp), (_val))
+#define m_assert_dbl_gt(_exp, _val)					\
+	___m_assert(M_DBL_GT, (__func__), (__LINE__), (_exp), (_val))
+#define m_assert_dbl_ge(_exp, _val)					\
+	___m_assert(M_DBL_GE, (__func__), (__LINE__), (_exp), (_val))
+#define m_assert_dbl_lt(_exp, _val)					\
+	___m_assert(M_DBL_LT, (__func__), (__LINE__), (_exp), (_val))
+#define m_assert_dbl_le(_exp, _val)					\
+	___m_assert(M_DBL_LE, (__func__), (__LINE__), (_exp), (_val))
+#define m_assert_dbl_range(_min, _max, _val)				\
+	___m_assert(M_DBL_RANGE, (__func__), (__LINE__), (_min), (_max), (_val))
+#define m_assert_dbl_nrange(_min, _max, _val)				\
+	___m_assert(M_DBL_NRANGE, (__func__), (__LINE__), (_min), (_max), (_val))
+ /** @} */
 
 /**
  * @defgroup m_assert_mem Memory Assertions
