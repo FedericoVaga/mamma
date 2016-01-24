@@ -349,6 +349,27 @@ void ___m_assert(enum m_asserts type,
 	va_end(args);
 }
 
+void ___m_check(enum m_asserts type,
+		const char *func, const unsigned int line,
+		...)
+{
+	int cond;
+	va_list args;
+
+	va_start(args, line);
+	cond = asserts[type].condition(args);
+	va_end(args);
+
+	if (cond)
+		return;
+
+	va_start(args, line);
+	fprintf(stdout, "INVALID@%s():%d - ", func, line);
+	vfprintf(stdout, asserts[type].fmt, args);
+	fprintf(stdout, "\n");
+	va_end(args);
+}
+
 static void m_test_run(struct m_test *m_test)
 {
 	m_test->state = M_STATE_RUNNING;

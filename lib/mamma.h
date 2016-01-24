@@ -144,6 +144,23 @@ extern void ___m_check(enum m_asserts type,
 	___m_assert(M_INT_RANGE, (__func__), (__LINE__), (_min), (_max), (_val))
 #define m_assert_int_nrange(_min, _max, _val)				\
 	___m_assert(M_INT_NRANGE, (__func__), (__LINE__), (_min), (_max), (_val))
+
+#define m_check_int_eq(_exp, _val)					\
+	___m_check(M_INT_EQ, (__func__), (__LINE__), (_exp), (_val))
+#define m_check_int_neq(_exp, _val)					\
+	___m_check(M_INT_NEQ, (__func__), (__LINE__), (_exp), (_val))
+#define m_check_int_gt(_exp, _val)					\
+	___m_check(M_INT_GT, (__func__), (__LINE__), (_exp), (_val))
+#define m_check_int_ge(_exp, _val)					\
+	___m_check(M_INT_GE, (__func__), (__LINE__), (_exp), (_val))
+#define m_check_int_lt(_exp, _val)					\
+	___m_check(M_INT_LT, (__func__), (__LINE__), (_exp), (_val))
+#define m_check_int_le(_exp, _val)					\
+	___m_check(M_INT_LE, (__func__), (__LINE__), (_exp), (_val))
+#define m_check_int_range(_min, _max, _val)				\
+	___m_check(M_INT_RANGE, (__func__), (__LINE__), (_min), (_max), (_val))
+#define m_check_int_nrange(_min, _max, _val)				\
+	___m_check(M_INT_NRANGE, (__func__), (__LINE__), (_min), (_max), (_val))
 /** @} */
 /**
  * @defgroup m_assert_dbl Float Assertions
@@ -164,6 +181,23 @@ extern void ___m_check(enum m_asserts type,
 	___m_assert(M_DBL_RANGE, (__func__), (__LINE__), (double)(_min), (double)(_max), (double)(_val))
 #define m_assert_dbl_nrange(_min, _max, _val)				\
 	___m_assert(M_DBL_NRANGE, (__func__), (__LINE__), (double)(_min), (double)(_max), (double)(_val))
+
+#define m_check_dbl_eq(_exp, _val)					\
+	___m_check(M_DBL_EQ, (__func__), (__LINE__), (double)(_exp), (double)(_val))
+#define m_check_dbl_neq(_exp, _val)					\
+	___m_check(M_DBL_NEQ, (__func__), (__LINE__), (double)(_exp), (double)(_val))
+#define m_check_dbl_gt(_exp, _val)					\
+	___m_check(M_DBL_GT, (__func__), (__LINE__), (double)(_exp), (double)(_val))
+#define m_check_dbl_ge(_exp, _val)					\
+	___m_check(M_DBL_GE, (__func__), (__LINE__), (double)(_exp), (double)(_val))
+#define m_check_dbl_lt(_exp, _val)					\
+	___m_check(M_DBL_LT, (__func__), (__LINE__), (double)(_exp), (double)(_val))
+#define m_check_dbl_le(_exp, _val)					\
+	___m_check(M_DBL_LE, (__func__), (__LINE__), (double)(_exp), (double)(_val))
+#define m_check_dbl_range(_min, _max, _val)				\
+	___m_check(M_DBL_RANGE, (__func__), (__LINE__), (double)(_min), (double)(_max), (double)(_val))
+#define m_check_dbl_nrange(_min, _max, _val)				\
+	___m_check(M_DBL_NRANGE, (__func__), (__LINE__), (double)(_min), (double)(_max), (double)(_val))
  /** @} */
 
 /**
