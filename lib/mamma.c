@@ -221,6 +221,95 @@ static int m_cond_mem_neq(va_list args)
 	return !m_cond_mem_eq(args);
 }
 
+static int m_cond_mem_greater_than(va_list args)
+{
+	void *a, *b;
+	size_t n;
+
+	a = va_arg(args, void*);
+	b = va_arg(args, void*);
+	n = va_arg(args, size_t);
+
+	if (memcmp(a, b, n) > 0) {
+		return 1;
+	} else {
+		errno = EINVAL;
+		return 0;
+	}
+}
+
+
+/**
+ * Implement the function instead of re-use the others (like we did for
+ * int and double) in order to avoid double memory scanning
+ */
+static int m_cond_mem_greater_equal(va_list args)
+{
+	void *a, *b;
+	size_t n;
+
+	a = va_arg(args, void*);
+	b = va_arg(args, void*);
+	n = va_arg(args, size_t);
+
+	if (memcmp(a, b, n) >= 0) {
+		return 1;
+	} else {
+		errno = EINVAL;
+		return 0;
+	}
+}
+
+static int m_cond_mem_less_than(va_list args)
+{
+	return !m_cond_mem_greater_equal(args);
+}
+
+static int m_cond_mem_less_equal(va_list args)
+{
+	return !m_cond_mem_greater_than(args);
+}
+
+static int m_cond_mem_in_range(va_list args)
+{
+	void *min, *max, *val;
+	size_t n;
+
+	min = va_arg(args, void*);
+	max = va_arg(args, void*);
+	val = va_arg(args, void*);
+	n = va_arg(args, size_t);
+
+	if (memcmp(min, val, n) <= 0 && memcmp(val, max, n) <= 0) {
+		return 1;
+	} else {
+		errno = EINVAL;
+		return 0;
+	}
+}
+
+/**
+ * Implement the function instead of re-use the others (like we did for
+ * int and double) in order to avoid double memory scanning
+ */
+static int m_cond_mem_not_in_range(va_list args)
+{
+	void *min, *max, *val;
+	size_t n;
+
+	min = va_arg(args, void*);
+	max = va_arg(args, void*);
+	val = va_arg(args, void*);
+	n = va_arg(args, size_t);
+
+	if (memcmp(min, val, n) > 0 || memcmp(val, max, n) > 0) {
+		return 1;
+	} else {
+		errno = EINVAL;
+		return 0;
+	}
+}
+
 /* -------------------------------------------------------------------- */
 /*                Finish of test conditions implementation              */
 /* -------------------------------------------------------------------- */
@@ -310,6 +399,30 @@ static const struct m_assertion asserts[] = {
 	[M_MEM_NEQ] = {
 		.condition = m_cond_mem_neq,
 		.fmt = "Expected different memory content at addresses %p and %p (size: %z)"
+	},
+	[M_MEM_GT] = {
+		.condition = m_cond_mem_greater_than,
+		.fmt = "Expected the memory content at addresses %p to be greater than the memory content at address %p (size: %z)",
+	},
+	[M_MEM_GE] = {
+		.condition = m_cond_mem_greater_equal,
+		.fmt = "Expected the memory content at addresses %p to be greater or equal than the memory content at address %p (size: %z)",
+	},
+	[M_MEM_LT] = {
+		.condition = m_cond_mem_less_than,
+		.fmt = "Expected the memory content at addresses %p to be less than the memory content at address %p (size: %z)",
+	},
+	[M_MEM_LE] = {
+		.condition = m_cond_mem_less_equal,
+		.fmt = "Expected the memory content at addresses %p to be less or equal than the memory content at address %p (size: %z)",
+	},
+	[M_MEM_RANGE] = {
+		.condition = m_cond_mem_in_range,
+		.fmt = "Expected the memory content at addresses %p to be within the range defined by the memory content at %p and %p (size: %z)",
+	},
+	[M_MEM_NRANGE] = {
+		.condition = m_cond_mem_not_in_range,
+		.fmt = "Expected the memory content at addresses %p to be outside the range defined by the memory content at %p and %p (size: %z)",
 	},
 };
 

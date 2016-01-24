@@ -203,14 +203,46 @@ extern void ___m_check(enum m_asserts type,
 /**
  * @defgroup m_assert_mem Memory Assertions
  */
-
 #define m_assert_mem_not_null(_ptr)					\
-	___m_assert(M_PTR_NOT_NULL, (__func__), (__LINE__), (_ptr))
+	___m_assert(M_PTR_NOT_NULL, (__func__), (__LINE__), (void *)(_ptr))
 #define m_assert_mem_null(_ptr)					\
-	___m_assert(M_PTR_NULL, (__func__), (__LINE__), (_ptr))
+	___m_assert(M_PTR_NULL, (__func__), (__LINE__), (void *)(_ptr))
 #define m_assert_mem_eq(_ptr1, _ptr2, _size)				\
-	___m_assert(M_MEM_EQ, (__func__), (__LINE__), (_ptr1), (_ptr2), (_size))
+	___m_assert(M_MEM_EQ, (__func__), (__LINE__), (void *)(_ptr1), (void *)(_ptr2), (size_t)(_size))
 #define m_assert_mem_neq(_ptr1, _ptr2, _size)				\
-	___m_assert(M_MEM_NEQ, (__func__), (__LINE__), (_ptr1), (_ptr2), (_size))
+	___m_assert(M_MEM_NEQ, (__func__), (__LINE__), (void *)(_ptr1), (void *)(_ptr2), (size_t)(_size))
+#define m_assert_mem_gt(_ptr1, _ptr2, _size)				\
+	___m_assert(M_MEM_GT, (__func__), (__LINE__), (void *)(_ptr1), (void *)(_ptr2), (size_t)(_size))
+#define m_assert_mem_ge(_ptr1, _ptr2, _size)				\
+	___m_assert(M_MEM_GE, (__func__), (__LINE__), (void *)(_ptr1), (void *)(_ptr2), (size_t)(_size))
+#define m_assert_mem_lt(_ptr1, _ptr2, _size)				\
+	___m_assert(M_MEM_LT, (__func__), (__LINE__), (void *)(_ptr1), (void *)(_ptr2), (size_t)(_size))
+#define m_assert_mem_le(_ptr1, _ptr2, _size)				\
+	___m_assert(M_MEM_LE, (__func__), (__LINE__), (void *)(_ptr1), (void *)(_ptr2), (size_t)(_size))
+#define m_assert_mem_range(_ptr1, _ptr2, _ptr3, _size)			\
+	___m_assert(M_MEM_RANGE, (__func__), (__LINE__), (void *)(_ptr1), (void *)(_ptr2), (void *)(_ptr3), (size_t)(_size))
+#define m_assert_mem_nrange(_ptr1, _ptr2, _ptr3, _size)			\
+	___m_assert(M_MEM_NRANGE, (__func__), (__LINE__), (void *)(_ptr1), (void *)(_ptr2), (void *)(_ptr3), (size_t)(_size))
+
+#define m_check_mem_not_null(_ptr)					\
+	___m_check(M_PTR_NOT_NULL, (__func__), (__LINE__), (void *)(_ptr))
+#define m_check_mem_null(_ptr)					\
+	___m_check(M_PTR_NULL, (__func__), (__LINE__), (void *)(_ptr))
+#define m_check_mem_eq(_ptr1, _ptr2, _size)				\
+	___m_check(M_MEM_EQ, (__func__), (__LINE__), (void *)(_ptr1), (void *)(_ptr2), (size_t)(_size))
+#define m_check_mem_neq(_ptr1, _ptr2, _size)				\
+	___m_check(M_MEM_NEQ, (__func__), (__LINE__), (void *)(_ptr1), (void *)(_ptr2), (size_t)(_size))
+#define m_check_mem_gt(_ptr1, _ptr2, _size)				\
+	___m_check(M_MEM_GT, (__func__), (__LINE__), (void *)(_ptr1), (void *)(_ptr2), (size_t)(_size))
+#define m_check_mem_ge(_ptr1, _ptr2, _size)				\
+	___m_check(M_MEM_GE, (__func__), (__LINE__), (void *)(_ptr1), (void *)(_ptr2), (size_t)(_size))
+#define m_check_mem_lt(_ptr1, _ptr2, _size)				\
+	___m_check(M_MEM_LT, (__func__), (__LINE__), (void *)(_ptr1), (void *)(_ptr2), (size_t)(_size))
+#define m_check_mem_le(_ptr1, _ptr2, _size)				\
+	___m_check(M_MEM_LE, (__func__), (__LINE__), (void *)(_ptr1), (void *)(_ptr2), (size_t)(_size))
+#define m_check_mem_range(_ptr1, _ptr2, _ptr3, _size)			\
+	___m_check(M_MEM_RANGE, (__func__), (__LINE__), (void *)(_ptr1), (void *)(_ptr2), (void *)(_ptr3), (size_t)(_size))
+#define m_check_mem_nrange(_ptr1, _ptr2, _ptr3, _size)			\
+	___m_check(M_MEM_NRANGE, (__func__), (__LINE__), (void *)(_ptr1), (void *)(_ptr2), (void *)(_ptr3), (size_t)(_size))
 /** @} */
 #endif
