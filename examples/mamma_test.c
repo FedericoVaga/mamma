@@ -38,8 +38,26 @@ static void test1(struct m_test *m_test)
 
 static void test2(struct m_test *m_test)
 {
-	m_assert_int_neq(4, 5);
-	m_assert_int_neq(4, 4);
+	m_check_int_eq(4, 5);
+	m_check_int_neq(4, 4);
+	m_check_int_gt(5, 6);
+	m_check_int_ge(5, 6);
+	m_check_int_ge(5, 6);
+	m_check_int_lt(4, 3);
+	m_check_int_le(4, 3);
+	m_check_int_le(5, 3);
+	m_check_int_range(0, 10, 10);
+	m_check_int_nrange(0, 10, 5);
+	m_check_dbl_eq(4.1234562, 4.123456);
+	m_check_dbl_neq(4.214, 4.214);
+	m_check_dbl_gt(5.12433522, 6.023545);
+	m_check_dbl_ge(5.12312, 6.1231);
+	m_check_dbl_ge(5.556, 5.5561);
+	m_check_dbl_lt(4.34234, 3.93243);
+	m_check_dbl_le(4.143234, 3.54352);
+	m_check_dbl_le(5.1232, 5.1231);
+	m_check_dbl_range(0, 1, 1.2425435);
+	m_check_dbl_nrange(0, 1, 0.12312);
 }
 
 static void test3(struct m_test *m_test)
