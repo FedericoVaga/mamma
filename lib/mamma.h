@@ -245,4 +245,49 @@ extern void ___m_check(enum m_asserts type,
 #define m_check_mem_nrange(_ptr1, _ptr2, _ptr3, _size)			\
 	___m_check(M_MEM_NRANGE, (__func__), (__LINE__), (void *)(_ptr1), (void *)(_ptr2), (void *)(_ptr3), (size_t)(_size))
 /** @} */
+
+
+/**
+ * @defgroup m_assert_str String Assertions
+ */
+#define m_assert_str_not_null(_ptr) m_assert_mem_not_null((_ptr))
+#define m_assert_str_null(_ptr) m_assert_mem_null((_ptr))
+#define m_assert_str_eq(_ptr1, _ptr2, _size)				\
+	___m_assert(M_STR_EQ, (__func__), (__LINE__), (char *)(_ptr1), (char *)(_ptr2), (size_t)(_size))
+#define m_assert_str_neq(_ptr1, _ptr2, _size)				\
+	___m_assert(M_STR_NEQ, (__func__), (__LINE__), (char *)(_ptr1), (char *)(_ptr2), (size_t)(_size))
+#define m_assert_str_gt(_ptr1, _ptr2, _size)				\
+	___m_assert(M_STR_GT, (__func__), (__LINE__), (char *)(_ptr1), (char *)(_ptr2), (size_t)(_size))
+#define m_assert_str_ge(_ptr1, _ptr2, _size)				\
+	___m_assert(M_STR_GE, (__func__), (__LINE__), (char *)(_ptr1), (char *)(_ptr2), (size_t)(_size))
+#define m_assert_str_lt(_ptr1, _ptr2, _size)				\
+	___m_assert(M_STR_LT, (__func__), (__LINE__), (char *)(_ptr1), (char *)(_ptr2), (size_t)(_size))
+#define m_assert_str_le(_ptr1, _ptr2, _size)				\
+	___m_assert(M_STR_LE, (__func__), (__LINE__), (char *)(_ptr1), (char *)(_ptr2), (size_t)(_size))
+#define m_assert_str_range(_ptr1, _ptr2, _ptr3, _size)			\
+	___m_assert(M_STR_RANGE, (__func__), (__LINE__), (char *)(_ptr1), (char *)(_ptr2), (char *)(_ptr3), (size_t)(_size))
+#define m_assert_str_nrange(_ptr1, _ptr2, _ptr3, _size)			\
+	___m_assert(M_STR_NRANGE, (__func__), (__LINE__), (char *)(_ptr1), (char *)(_ptr2), (char *)(_ptr3), (size_t)(_size))
+
+#define m_check_str_not_null(_ptr)					\
+	___m_check(M_PTR_NOT_NULL, (__func__), (__LINE__), (char *)(_ptr))
+#define m_check_str_null(_ptr)					\
+	___m_check(M_PTR_NULL, (__func__), (__LINE__), (char *)(_ptr))
+#define m_check_str_eq(_ptr1, _ptr2, _size)				\
+	___m_check(M_STR_EQ, (__func__), (__LINE__), (char *)(_ptr1), (char *)(_ptr2), (size_t)(_size))
+#define m_check_str_neq(_ptr1, _ptr2, _size)				\
+	___m_check(M_STR_NEQ, (__func__), (__LINE__), (char *)(_ptr1), (char *)(_ptr2), (size_t)(_size))
+#define m_check_str_gt(_ptr1, _ptr2, _size)				\
+	___m_check(M_STR_GT, (__func__), (__LINE__), (char *)(_ptr1), (char *)(_ptr2), (size_t)(_size))
+#define m_check_str_ge(_ptr1, _ptr2, _size)				\
+	___m_check(M_STR_GE, (__func__), (__LINE__), (char *)(_ptr1), (char *)(_ptr2), (size_t)(_size))
+#define m_check_str_lt(_ptr1, _ptr2, _size)				\
+	___m_check(M_STR_LT, (__func__), (__LINE__), (char *)(_ptr1), (char *)(_ptr2), (size_t)(_size))
+#define m_check_str_le(_ptr1, _ptr2, _size)				\
+	___m_check(M_STR_LE, (__func__), (__LINE__), (char *)(_ptr1), (char *)(_ptr2), (size_t)(_size))
+#define m_check_str_range(_ptr1, _ptr2, _ptr3, _size)			\
+	___m_check(M_STR_RANGE, (__func__), (__LINE__), (char *)(_ptr1), (char *)(_ptr2), (char *)(_ptr3), (size_t)(_size))
+#define m_check_str_nrange(_ptr1, _ptr2, _ptr3, _size)			\
+	___m_check(M_STR_NRANGE, (__func__), (__LINE__), (char *)(_ptr1), (char *)(_ptr2), (char *)(_ptr3), (size_t)(_size))
+/** @} */
 #endif

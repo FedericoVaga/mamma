@@ -310,6 +310,107 @@ static int m_cond_mem_not_in_range(va_list args)
 	}
 }
 
+
+static int m_cond_str_eq(va_list args)
+{
+	char *ptr1, *ptr2;
+
+	ptr1 = va_arg(args, char*);
+	ptr2 = va_arg(args, char*);
+
+	if (strcmp(ptr1, ptr2) == 0) {
+		return 1;
+	} else {
+		errno = EINVAL;
+		return 0;
+	}
+}
+
+static int m_cond_str_neq(va_list args)
+{
+	return !m_cond_str_eq(args);
+}
+
+static int m_cond_str_greater_than(va_list args)
+{
+	char *a, *b;
+
+	a = va_arg(args, char*);
+	b = va_arg(args, char*);
+
+	if (strcmp(a, b) > 0) {
+		return 1;
+	} else {
+		errno = EINVAL;
+		return 0;
+	}
+}
+
+
+/**
+ * Implement the function instead of re-use the others (like we did for
+ * int and double) in order to avoid double strory scanning
+ */
+static int m_cond_str_greater_equal(va_list args)
+{
+	char *a, *b;
+
+	a = va_arg(args, char*);
+	b = va_arg(args, char*);
+
+	if (strcmp(a, b) >= 0) {
+		return 1;
+	} else {
+		errno = EINVAL;
+		return 0;
+	}
+}
+
+static int m_cond_str_less_than(va_list args)
+{
+	return !m_cond_str_greater_equal(args);
+}
+
+static int m_cond_str_less_equal(va_list args)
+{
+	return !m_cond_str_greater_than(args);
+}
+
+static int m_cond_str_in_range(va_list args)
+{
+	char *min, *max, *val;
+
+	min = va_arg(args, char*);
+	max = va_arg(args, char*);
+	val = va_arg(args, char*);
+
+	if (strcmp(min, val) <= 0 && strcmp(val, max) <= 0) {
+		return 1;
+	} else {
+		errno = EINVAL;
+		return 0;
+	}
+}
+
+/**
+ * Implement the function instead of re-use the others (like we did for
+ * int and double) in order to avoid double string scanning
+ */
+static int m_cond_str_not_in_range(va_list args)
+{
+	char *min, *max, *val;
+
+	min = va_arg(args, char*);
+	max = va_arg(args, char*);
+	val = va_arg(args, char*);
+
+	if (strcmp(min, val) > 0 || strcmp(val, max) > 0) {
+		return 1;
+	} else {
+		errno = EINVAL;
+		return 0;
+	}
+}
 /* -------------------------------------------------------------------- */
 /*                Finish of test conditions implementation              */
 /* -------------------------------------------------------------------- */
@@ -423,6 +524,38 @@ static const struct m_assertion asserts[] = {
 	[M_MEM_NRANGE] = {
 		.condition = m_cond_mem_not_in_range,
 		.fmt = "Expected the memory content at addresses %p to be outside the range defined by the memory content at %p and %p (size: %z)",
+	},
+	[M_STR_EQ] = {
+		.condition = m_cond_str_eq,
+		.fmt = "Expected <%s>, but got <%s>"
+	},
+	[M_STR_NEQ] = {
+		.condition = m_cond_str_neq,
+		.fmt = "Expected any but not <%s>, but got <%s>",
+	},
+	[M_STR_GT] = {
+		.condition = m_cond_str_greater_than,
+		.fmt = "Expected <%s> greater than <%s> (ASCII order)",
+	},
+	[M_STR_GE] = {
+		.condition = m_cond_str_greater_equal,
+		.fmt = "Expected <%s> greater or equal than <%s> (ASCII order)",
+	},
+	[M_STR_LT] = {
+		.condition = m_cond_str_less_than,
+		.fmt = "Expected <%s> less than <%s> (ASCII order)",
+	},
+	[M_STR_LE] = {
+		.condition = m_cond_str_less_equal,
+		.fmt = "Expected <%s> less or equal than <%s> (ASCII order)",
+	},
+	[M_STR_RANGE] = {
+		.condition = m_cond_str_in_range,
+		.fmt = "Expected in range [%s, %s], but got <%s> (ASCII order)",
+	},
+	[M_STR_NRANGE] = {
+		.condition = m_cond_str_not_in_range,
+		.fmt = "Expected outside range [%s, %s], but got <%s> (ASCII order)",
 	},
 };
 
