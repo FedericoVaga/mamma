@@ -44,8 +44,8 @@ static int m_cond_int_greater_than(va_list args)
 {
 	int a, b;
 
-	a = va_arg(args, double);
-	b = va_arg(args, double);
+	a = va_arg(args, int);
+	b = va_arg(args, int);
 
 	if (a > b) {
 		return 1;
@@ -81,9 +81,9 @@ static int m_cond_int_in_range(va_list args)
 {
 	int min, max, val;
 
-	min = va_arg(args, double);
-	max = va_arg(args, double);
-	val = va_arg(args, double);
+	min = va_arg(args, int);
+	max = va_arg(args, int);
+	val = va_arg(args, int);
 
 	if (min <= val && val <= max) {
 		return 1;
@@ -101,7 +101,7 @@ static int m_cond_int_not_in_range(va_list args)
 
 static int m_cond_dbl_equal(va_list args)
 {
-	int a, b;
+	double a, b;
 
 	a = va_arg(args, double);
 	b = va_arg(args, double);
@@ -121,7 +121,7 @@ static int m_cond_dbl_not_equal(va_list args)
 
 static int m_cond_dbl_greater_than(va_list args)
 {
-	int a, b;
+	double a, b;
 
 	a = va_arg(args, double);
 	b = va_arg(args, double);
@@ -158,11 +158,11 @@ static int m_cond_dbl_less_equal(va_list args)
 
 static int m_cond_dbl_in_range(va_list args)
 {
-	int min, max, val;
+	double min, max, val;
 
-	min = va_arg(args, int);
-	max = va_arg(args, int);
-	val = va_arg(args, int);
+	min = va_arg(args, double);
+	max = va_arg(args, double);
+	val = va_arg(args, double);
 
 	if (min <= val && val <= max) {
 		return 1;

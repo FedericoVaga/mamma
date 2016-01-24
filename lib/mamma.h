@@ -121,9 +121,12 @@ extern void _m_skip_test(unsigned int cond,
 /**
  * @defgroup m_assert_int Integer Assertions
  */
-void ___m_assert(enum m_asserts type,
-		   const char *func, const unsigned int line,
-		   ...);
+extern void ___m_assert(enum m_asserts type,
+			const char *func, const unsigned int line,
+			...);
+extern void ___m_check(enum m_asserts type,
+		       const char *func, const unsigned int line,
+		       ...);
 
 #define m_assert_int_eq(_exp, _val)					\
 	___m_assert(M_INT_EQ, (__func__), (__LINE__), (_exp), (_val))
@@ -146,21 +149,21 @@ void ___m_assert(enum m_asserts type,
  * @defgroup m_assert_dbl Float Assertions
  */
 #define m_assert_dbl_eq(_exp, _val)					\
-	___m_assert(M_DBL_EQ, (__func__), (__LINE__), (_exp), (_val))
+	___m_assert(M_DBL_EQ, (__func__), (__LINE__), (double)(_exp), (double)(_val))
 #define m_assert_dbl_neq(_exp, _val)					\
-	___m_assert(M_DBL_NEQ, (__func__), (__LINE__), (_exp), (_val))
+	___m_assert(M_DBL_NEQ, (__func__), (__LINE__), (double)(_exp), (double)(_val))
 #define m_assert_dbl_gt(_exp, _val)					\
-	___m_assert(M_DBL_GT, (__func__), (__LINE__), (_exp), (_val))
+	___m_assert(M_DBL_GT, (__func__), (__LINE__), (double)(_exp), (double)(_val))
 #define m_assert_dbl_ge(_exp, _val)					\
-	___m_assert(M_DBL_GE, (__func__), (__LINE__), (_exp), (_val))
+	___m_assert(M_DBL_GE, (__func__), (__LINE__), (double)(_exp), (double)(_val))
 #define m_assert_dbl_lt(_exp, _val)					\
-	___m_assert(M_DBL_LT, (__func__), (__LINE__), (_exp), (_val))
+	___m_assert(M_DBL_LT, (__func__), (__LINE__), (double)(_exp), (double)(_val))
 #define m_assert_dbl_le(_exp, _val)					\
-	___m_assert(M_DBL_LE, (__func__), (__LINE__), (_exp), (_val))
+	___m_assert(M_DBL_LE, (__func__), (__LINE__), (double)(_exp), (double)(_val))
 #define m_assert_dbl_range(_min, _max, _val)				\
-	___m_assert(M_DBL_RANGE, (__func__), (__LINE__), (_min), (_max), (_val))
+	___m_assert(M_DBL_RANGE, (__func__), (__LINE__), (double)(_min), (double)(_max), (double)(_val))
 #define m_assert_dbl_nrange(_min, _max, _val)				\
-	___m_assert(M_DBL_NRANGE, (__func__), (__LINE__), (_min), (_max), (_val))
+	___m_assert(M_DBL_NRANGE, (__func__), (__LINE__), (double)(_min), (double)(_max), (double)(_val))
  /** @} */
 
 /**
