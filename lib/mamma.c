@@ -561,27 +561,14 @@ static const struct m_assertion asserts[] = {
 
 
 /**
- * Generic failure function
- * It prints a failure message and it jumps out from the current test function
- * in order to run the next one
+ * Predefined check function.
  */
-static void _m_fail(enum m_asserts type,
-		      const char *func, const unsigned int line,
-		      va_list args)
+void m_check(enum m_asserts type, unsigned long flags,
+	     const char *func, const unsigned int line,
+	     ...)
 {
-	fprintf(stdout, "FAILURE@%s():%d - ", func, line);
-	vfprintf(stdout, asserts[type].fmt, args);
-	fprintf(stdout, "\n");
-	longjmp(global_jbuf, M_JUMP_ERROR);
-}
-
-
-void ___m_assert(enum m_asserts type,
-		   const char *func, const unsigned int line,
-		   ...)
-{
-	int cond;
 	va_list args;
+	int cond;
 
 	va_start(args, line);
 	cond = asserts[type].condition(args);
@@ -591,30 +578,19 @@ void ___m_assert(enum m_asserts type,
 		return;
 
 	va_start(args, line);
-	_m_fail(type, func, line, args);
-	va_end(args);
-}
-
-void ___m_check(enum m_asserts type,
-		const char *func, const unsigned int line,
-		...)
-{
-	int cond;
-	va_list args;
-
-	va_start(args, line);
-	cond = asserts[type].condition(args);
-	va_end(args);
-
-	if (cond)
-		return;
-
-	va_start(args, line);
-	fprintf(stdout, "INVALID@%s():%d - ", func, line);
+	fprintf(stdout, "ERROR @ %s():%d - ", func, line);
 	vfprintf(stdout, asserts[type].fmt, args);
 	fprintf(stdout, "\n");
 	va_end(args);
+
+	if (flags & M_FLAG_STOP_ON_ERROR) {
+		fprintf(stdout, "  Stop test \"%s\"\n", func);
+		longjmp(global_jbuf, M_JUMP_ERROR);
+	} else {
+		fprintf(stdout, "  Continue anyway\n");
+	}
 }
+
 
 static void m_test_run(struct m_test *m_test)
 {
@@ -642,10 +618,10 @@ static void m_test_run(struct m_test *m_test)
 	case M_JUMP_ERROR: /* test failed */
 		if ((m_test->suite->flags & M_ERRNO) && errno) {
 			if (m_test->suite->strerror)
-				fprintf(stdout, "\tError %d: %s\n",
+				fprintf(stdout, "    Error %d: %s\n",
 					errno, m_test->suite->strerror(errno));
 			else
-				fprintf(stdout, "\tError %d: %s\n",
+				fprintf(stdout, "    Error %d: %s\n",
 					errno, strerror(errno));
 		}
 		m_test->state = M_STATE_ERROR;
