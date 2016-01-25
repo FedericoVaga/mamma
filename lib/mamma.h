@@ -90,6 +90,7 @@ struct m_suite {
 	void (*set_up)(struct m_suite *m_suite);
 	void (*tear_down)(struct m_suite *m_suite);
 	char *(*strerror)(int errnum);
+	unsigned int total_count;
 	unsigned int success_count;
 	unsigned int fail_count;
 	unsigned int skip_count;

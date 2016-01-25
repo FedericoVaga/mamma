@@ -618,8 +618,10 @@ void ___m_check(enum m_asserts type,
 
 static void m_test_run(struct m_test *m_test)
 {
+	m_test->suite->total_count++;
 	m_test->state = M_STATE_RUNNING;
 	errno = 0;
+
 	/* Set up environment */
 	switch (setjmp(global_jbuf)) {
 	case M_NO_JUMP:
@@ -682,6 +684,11 @@ void m_suite_init(struct m_suite *suite)
 {
 	int i;
 
+	suite->total_count = 0;
+	suite->success_count = 0;
+	suite->fail_count = 0;
+	suite->skip_count = 0;
+
 	for (i = 0; i < suite->test_count; i++) {
 		suite->tests[i].state = M_STATE_STOP;
 		suite->tests[i].suite = suite;
@@ -698,9 +705,6 @@ void m_suite_run(struct m_suite *m_suite, unsigned long flags)
 	int i;
 
 	m_suite->flags = flags;
-	m_suite->success_count = 0;
-	m_suite->fail_count = 0;
-	m_suite->skip_count = 0;
 
 	if (flags & M_VERBOSE) {
 		fprintf(stdout, "Running suite \"%s\"\n", m_suite->name);
@@ -718,6 +722,7 @@ void m_suite_run(struct m_suite *m_suite, unsigned long flags)
 
 	if (flags & M_VERBOSE) {
 		fprintf(stdout, "------------------------------------------\n");
+		fprintf(stdout, "Total   %d\n", m_suite->total_count);
 		fprintf(stdout, "Success %d\n", m_suite->success_count);
 		fprintf(stdout, "Fail    %d\n", m_suite->fail_count);
 		fprintf(stdout, "Skip    %d\n", m_suite->skip_count);
