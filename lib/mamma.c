@@ -20,6 +20,25 @@ struct m_assertion {
 /* Following all implemented test conditions - comment only when needed */
 /* -------------------------------------------------------------------- */
 
+static int m_cond_true(va_list args)
+{
+	int cond;
+
+	cond = va_arg(args, int);
+
+	if (cond) {
+		return 1;
+	} else {
+		errno = EINVAL;
+		return 0;
+	}
+}
+
+static int m_cond_false(va_list args)
+{
+	return !m_cond_true(args);
+}
+
 static int m_cond_int_equal(va_list args)
 {
 	int a, b;
@@ -421,6 +440,14 @@ static int m_cond_str_not_in_range(va_list args)
  * List of known test conditions
  */
 static const struct m_assertion asserts[] = {
+	[M_TRUE] = {
+		.condition = m_cond_true,
+		.fmt = "Expected \"True\" condition but got \"False\"",
+	},
+	[M_FALSE] = {
+		.condition = m_cond_false,
+		.fmt = "Expected \"False\" condition but got \"True\"",
+	},
 	[M_INT_EQ] = {
 		.condition = m_cond_int_equal,
 		.fmt = "Expected <%d>, but got <%d>",

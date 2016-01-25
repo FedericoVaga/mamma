@@ -14,7 +14,9 @@
  * List of predefined assertion type
  */
 enum m_asserts {
-	M_INT_EQ = 0,
+	M_TRUE = 0,
+	M_FALSE,
+	M_INT_EQ,
 	M_INT_NEQ ,
 	M_INT_RANGE,
 	M_INT_NRANGE,
@@ -136,6 +138,24 @@ extern void _m_skip_test(unsigned int cond,
 extern void m_check(enum m_asserts type, unsigned long flags,
 		    const char *func, const unsigned int line,
 		    ...);
+
+/**
+ * @defgroup m_assert_boolean Boolean Assertions
+ */
+#define m_assert_true(_cond)				\
+	m_check(M_TRUE, M_FLAG_STOP_ON_ERROR,		\
+		(__func__), (__LINE__), (_cond))
+#define m_assert_false(_cond)				\
+	m_check(M_FALSE, M_FLAG_STOP_ON_ERROR,		\
+		(__func__), (__LINE__), (_cond))
+
+#define m_check_true(_cond)				\
+	m_check(M_TRUE, M_FLAG_CONT_ON_ERROR,		\
+		(__func__), (__LINE__), (_cond))
+#define m_check_false(_cond)				\
+	m_check(M_FALSE, M_FLAG_CONT_ON_ERROR,		\
+		(__func__), (__LINE__), (_cond))
+/** @} */
 
 /**
  * @defgroup m_assert_int Integer Assertions
