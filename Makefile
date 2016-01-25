@@ -1,4 +1,4 @@
-DIRS := lib examples
+DIRS := lib examples doc
 
 all clean:
 	$(MAKE) TARGET=$@ $(DIRS)
@@ -6,4 +6,4 @@ all clean:
 $(DIRS):
 	$(MAKE) -C $@ $(TARGET) MAMMA=`pwd`
 
-.PHONY: clean all examples lib
+.PHONY: clean all examples lib doc

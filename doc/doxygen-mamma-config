@@ -1,0 +1,19 @@
+PROJECT_NAME           = "Mamma"
+PROJECT_NUMBER         = $(GIT_VERSION)
+PROJECT_BRIEF          = "Mamma C Unit Test"
+PROJECT_LOGO           =
+OUTPUT_DIRECTORY       = $(OUTPUT)
+CREATE_SUBDIRS         = YES
+TAB_SIZE               = 8
+OPTIMIZE_OUTPUT_FOR_C  = YES
+
+EXTRACT_STATIC         = YES
+CASE_SENSE_NAMES       = YES
+ENABLE_PREPROCESSING   = YES
+WARN_NO_PARAMDOC       = YES
+
+INPUT                  = ../lib
+RECURSIVE              = YES
+
+GENERATE_HTML          = YES
+GENERATE_LATEX         = NO

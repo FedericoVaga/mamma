@@ -79,13 +79,22 @@ enum m_test_jump_conditions {
 #define M_FLAG_CONT_ON_ERROR (0)
 #define M_FLAG_STOP_ON_ERROR (1 << 0)
 
+/**
+ * Data structure representing a functionality test
+ */
 struct m_test {
-	enum m_test_state state;
-	struct m_suite *suite;
-	void *private;
-	void (*set_up)(struct m_test *test);
-	void (*test)(struct m_test *test);
-	void (*tear_down)(struct m_test *test);
+	enum m_test_state state; /**< current test state */
+	struct m_suite *suite; /**< Suite test where this test belong to */
+	void *private; /**< private data that can be used by set_up() and
+			  tear_down() functions in order to pass data to
+			  the test function */
+	void (*set_up)(struct m_test *test); /**< run a setting up function that
+						prepare the environment to run
+						the test */
+	void (*test)(struct m_test *test); /**< test function */
+	void (*tear_down)(struct m_test *test); /**< it should reverse the
+						   operations done by the
+						   set_up() function */
 };
 #define m_test(_up, _down, _test, _priv) {	\
 		.private = (_priv),		\
@@ -100,17 +109,24 @@ struct m_test {
  */
 struct m_suite {
 	const char *name; /**< suite name */
-	unsigned long flags;
-	void *private;
+	unsigned long flags; /**< suite options */
+	void *private; /**< private data that can be used by set_up() and
+			  tear_down() functions in order to pass data to
+			  the tests */
 	struct m_test *tests; /**< list of tests */
 	const unsigned int test_count; /**< number of valid tests */
-	void (*set_up)(struct m_suite *m_suite);
-	void (*tear_down)(struct m_suite *m_suite);
-	char *(*strerror)(int errnum);
-	unsigned int total_count;
-	unsigned int success_count;
-	unsigned int fail_count;
-	unsigned int skip_count;
+	void (*set_up)(struct m_suite *m_suite); /**< run a setting up function
+						    that prepare the environment
+						    to run the tests */
+	void (*tear_down)(struct m_suite *m_suite); /**< it should reverse the
+						       operations done by the
+						       set_up() function */
+	char *(*strerror)(int errnum); /**< function to use to print errno
+					  error messages */
+	unsigned int total_count; /**< total number of executed suite's tests */
+	unsigned int success_count; /**< number of successful suite's tests */
+	unsigned int fail_count; /**< number of failed suite's tests */
+	unsigned int skip_count;  /**< number of skipped suite's tests */
 };
 #define m_suite(_name, _test, _test_count, _up, _down, _priv) {	\
 		.name = (_name),					\
@@ -126,22 +142,27 @@ struct m_suite {
 
 extern void m_suite_init(struct m_suite *suite);
 extern void m_suite_run(struct m_suite *m_suite, unsigned long flags);
-
-extern void _m_assert(unsigned int condition, char *msg,
-		      const char *func, const unsigned int line);
-extern void _m_skip_test(unsigned int cond,
+extern void m_skip_test(unsigned int cond,
 			 const char *func, const unsigned int line);
-#define m_assert(_cond, _msg, _f, _l)			\
-	_m_assert((_cond), (_msg), __func__, __LINE__)
-#define m_skip(_cond) _m_skip_test((_cond), __func__, __LINE__)
+
+#define m_skip(_cond) m_skip_test((_cond), __func__, __LINE__)
 
 extern void m_check(enum m_asserts type, unsigned long flags,
 		    const char *func, const unsigned int line,
 		    ...);
 
+
+/**
+ * @defgroup m_assert_custom Build Custum Assertions
+ */
+
+/** @} */
+
 /**
  * @defgroup m_assert_boolean Boolean Assertions
  */
+
+
 #define m_assert_true(_cond)				\
 	m_check(M_TRUE, M_FLAG_STOP_ON_ERROR,		\
 		(__func__), (__LINE__), (_cond))
@@ -155,11 +176,7 @@ extern void m_check(enum m_asserts type, unsigned long flags,
 #define m_check_false(_cond)				\
 	m_check(M_FALSE, M_FLAG_CONT_ON_ERROR,		\
 		(__func__), (__LINE__), (_cond))
-/** @} */
 
-/**
- * @defgroup m_assert_int Integer Assertions
- */
 
 #define m_assert_int_eq(_exp, _val)			\
 	m_check(M_INT_EQ, M_FLAG_STOP_ON_ERROR,		\
@@ -210,10 +227,8 @@ extern void m_check(enum m_asserts type, unsigned long flags,
 #define m_check_int_nrange(_min, _max, _val)			\
 	m_check(M_INT_NRANGE, M_FLAG_CONT_ON_ERROR,		\
 		(__func__), (__LINE__), (_min), (_max), (_val))
-/** @} */
-/**
- * @defgroup m_assert_dbl Float Assertions
- */
+
+
 #define m_assert_dbl_eq(_exp, _val)		\
 	m_check(M_DBL_EQ, M_FLAG_STOP_ON_ERROR,	\
 		(__func__), (__LINE__),		\
@@ -279,11 +294,9 @@ extern void m_check(enum m_asserts type, unsigned long flags,
 	m_check(M_DBL_NRANGE, M_FLAG_CONT_ON_ERROR,		\
 		(__func__), (__LINE__),				\
 		(double)(_min), (double)(_max), (double)(_val))
-/** @} */
 
-/**
- * @defgroup m_assert_mem Memory Assertions
- */
+
+
 #define m_assert_mem_not_null(_ptr)			\
 	m_check(M_PTR_NOT_NULL, M_FLAG_STOP_ON_ERROR,	\
 		(__func__), (__LINE__),			\
@@ -369,12 +382,9 @@ extern void m_check(enum m_asserts type, unsigned long flags,
 		(__func__), (__LINE__),					\
 		(void *)(_ptr1), (void *)(_ptr2), (void *)(_ptr3),	\
 		(size_t)(_size))
-/** @} */
 
 
-/**
- * @defgroup m_assert_str String Assertions
- */
+
 #define m_assert_str_not_null(_ptr) m_assert_mem_not_null((_ptr))
 #define m_assert_str_null(_ptr) m_assert_mem_null((_ptr))
 #define m_assert_str_eq(_ptr1, _ptr2, _size)				\
@@ -454,5 +464,5 @@ extern void m_check(enum m_asserts type, unsigned long flags,
 		(__func__), (__LINE__),					\
 		(char *)(_ptr1), (char *)(_ptr2), (char *)(_ptr3),	\
 		(size_t)(_size))
-/** @} */
+
 #endif

@@ -10,9 +10,13 @@
 
 static jmp_buf global_jbuf;
 
+/**
+ * Data structure describing an assertion
+ */
 struct m_assertion {
-	int (*condition)();
-	char *fmt;
+	int (*condition)(); /**< function that evaluate
+			       the assertion condition */
+	char *fmt; /**< error's format string */
 };
 
 
@@ -20,6 +24,15 @@ struct m_assertion {
 /* Following all implemented test conditions - comment only when needed */
 /* -------------------------------------------------------------------- */
 
+/**
+ * @defgroup m_assert_boolean Boolean Assertions
+ */
+
+/**
+ * @def m_assert_true(_cond)
+ * It raise an error if the given condition is not true
+ * @param[in] _cond condition to evaluate
+ */
 static int m_cond_true(va_list args)
 {
 	int cond;
@@ -34,10 +47,24 @@ static int m_cond_true(va_list args)
 	}
 }
 
+
+/**
+ * @def m_assert_false(_cond)
+ * It raise an error if the given condition is not true
+ * @param[in] _cond condition to evaluate
+ */
 static int m_cond_false(va_list args)
 {
 	return !m_cond_true(args);
 }
+
+/** @} */
+
+
+
+/**
+ * @defgroup m_assert_int Integer Assertions
+ */
 
 static int m_cond_int_equal(va_list args)
 {
@@ -117,6 +144,13 @@ static int m_cond_int_not_in_range(va_list args)
 	return !m_cond_int_in_range(args);
 }
 
+/** @} */
+
+
+
+/**
+ * @defgroup m_assert_dbl Float Assertions
+ */
 
 static int m_cond_dbl_equal(va_list args)
 {
@@ -196,7 +230,13 @@ static int m_cond_dbl_not_in_range(va_list args)
 	return !m_cond_dbl_in_range(args);
 }
 
+/** @} */
 
+
+
+/**
+ * @defgroup m_assert_mem Memory Assertions
+ */
 
 static int m_cond_ptr_null(va_list args)
 {
@@ -329,6 +369,13 @@ static int m_cond_mem_not_in_range(va_list args)
 	}
 }
 
+/** @} */
+
+
+
+/**
+ * @defgroup m_assert_str String Assertions
+ */
 
 static int m_cond_str_eq(va_list args)
 {
@@ -430,6 +477,9 @@ static int m_cond_str_not_in_range(va_list args)
 		return 0;
 	}
 }
+
+/** @} */
+
 /* -------------------------------------------------------------------- */
 /*                Finish of test conditions implementation              */
 /* -------------------------------------------------------------------- */
@@ -589,6 +639,10 @@ static const struct m_assertion asserts[] = {
 
 /**
  * Predefined check function.
+ * @param[in] type type of assertion
+ * @param[in] flags check options
+ * @param[in] func function name that called this function
+ * @param[in] line source code line where this function has being called
  */
 void m_check(enum m_asserts type, unsigned long flags,
 	     const char *func, const unsigned int line,
@@ -670,7 +724,13 @@ static void m_test_run(struct m_test *m_test)
 }
 
 
-void _m_skip_test(unsigned int cond, const char *func, const unsigned int line)
+/**
+ * It skips the current running test if the given condition is true
+ * @param[on] cond condition to evaluate
+ * @param[in] func function name that called this function
+ * @param[in] line source code line where this function has being called
+ */
+void m_skip_test(unsigned int cond, const char *func, const unsigned int line)
 {
 	if (!cond)
 		return;
