@@ -763,7 +763,16 @@ void m_check(enum m_asserts type, unsigned long flags,
 	/* According to the given flag, continue test execution or jump */
 	if (flags & M_FLAG_STOP_ON_ERROR) {
 		fprintf(stdout, "  Stop test \"%s\"\n", func);
-		longjmp(global_jbuf, M_JUMP_ERROR);
+		switch (m_test_cur->state) {
+		case M_STATE_RUNNING:
+			longjmp(global_jbuf, M_JUMP_ERROR);
+		case M_STATE_SKIP:
+		case M_STATE_ERROR:
+			longjmp(global_jbuf, M_JUMP_TEAR_FAIL);
+		case M_STATE_SUCCESS:
+		case M_STATE_STOP:
+			break;
+		}
 	} else {
 		fprintf(stdout, "  Continue test \"%s\" anyway\n", func);
 	}
