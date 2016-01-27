@@ -3,6 +3,7 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
 #include <mamma.h>
 
 static void set_up(struct m_test *m_test)
@@ -62,8 +63,14 @@ static void test2(struct m_test *m_test)
 
 static void test3(struct m_test *m_test)
 {
-	m_assert_int_range(0, 10, 4);
-	m_assert_int_range(0, 10, 100);
+	int a = 4, b = 5;
+
+	m_check_custom(a == b || a == 1, EINVAL,
+		       "%d != %d and %d != 1", a, b, a);
+	m_assert_custom(a == b || a == 1, EINVAL,
+			"%d != %d and %d != 1", a, b, a);
+	m_assert_custom(a == b || a == 1, EINVAL,
+			"%d != %d and %d != 1", a, b, a);
 }
 
 static void test4(struct m_test *m_test)

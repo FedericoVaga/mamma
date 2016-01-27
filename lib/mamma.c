@@ -8,7 +8,12 @@
 #include <errno.h>
 #include "mamma.h"
 
-static jmp_buf global_jbuf;
+static jmp_buf global_jbuf; /**< jump bookmark */
+static struct m_test *m_test_cur; /**< keep track of the current running test.
+				     Tests are running one after the other
+				     (they do not run in parallel); so, it is
+				     save to use this pointer to get information
+				     about the current running test)*/
 
 /**
  * Data structure describing an assertion
@@ -16,13 +21,15 @@ static jmp_buf global_jbuf;
 struct m_assertion {
 	int (*condition)(); /**< function that evaluate
 			       the assertion condition */
-	char *fmt; /**< error's format string */
+	const char *fmt; /**< error's format string */
+	const unsigned int errorno; /**< error number to use in case of error */
 };
 
 
 /* -------------------------------------------------------------------- */
 /* Following all implemented test conditions - comment only when needed */
 /* -------------------------------------------------------------------- */
+
 
 /**
  * @defgroup m_assert_boolean Boolean Assertions
@@ -490,151 +497,229 @@ static int m_cond_str_not_in_range(va_list args)
  * List of known test conditions
  */
 static const struct m_assertion asserts[] = {
+	[M_CUSTOM] = { /* Handled directly by m_check() */
+		.condition = NULL,
+		.fmt = NULL,
+		.errorno = 0,
+	},
 	[M_TRUE] = {
 		.condition = m_cond_true,
 		.fmt = "Expected \"True\" condition but got \"False\"",
+		.errorno = EINVAL,
 	},
 	[M_FALSE] = {
 		.condition = m_cond_false,
 		.fmt = "Expected \"False\" condition but got \"True\"",
+		.errorno = EINVAL,
 	},
 	[M_INT_EQ] = {
 		.condition = m_cond_int_equal,
 		.fmt = "Expected <%d>, but got <%d>",
+		.errorno = EINVAL,
 	},
 	[M_INT_NEQ] = {
 		.condition = m_cond_int_not_equal,
 		.fmt = "Expected any but not <%d>, but got <%d>",
+		.errorno = EINVAL,
 	},
 	[M_INT_RANGE] = {
 		.condition = m_cond_int_in_range,
 		.fmt = "Expected in range [%d, %d], but got <%d>",
+		.errorno = EINVAL,
 	},
 	[M_INT_NRANGE] = {
 		.condition = m_cond_int_not_in_range,
 		.fmt = "Expected outside range [%d, %d], but got <%d>",
+		.errorno = EINVAL,
 	},
 	[M_INT_GT] = {
 		.condition = m_cond_int_greater_than,
 		.fmt = "Expected <%d> greater than <%d>",
+		.errorno = EINVAL,
 	},
 	[M_INT_GE] = {
 		.condition = m_cond_int_greater_equal,
 		.fmt = "Expected <%d> greater or equal than <%d>",
+		.errorno = EINVAL,
 	},
 	[M_INT_LT] = {
 		.condition = m_cond_int_less_than,
 		.fmt = "Expected <%d> less than <%d>",
+		.errorno = EINVAL,
 	},
 	[M_INT_LE] = {
 		.condition = m_cond_int_less_equal,
 		.fmt = "Expected <%d> less or equal than <%d>",
+		.errorno = EINVAL,
 	},
 	[M_DBL_EQ] = {
 		.condition = m_cond_dbl_equal,
 		.fmt = "Expected <%f>, but got <%f>",
+		.errorno = EINVAL,
 	},
 	[M_DBL_NEQ] = {
 		.condition = m_cond_dbl_not_equal,
 		.fmt = "Expected any but not <%f>, but got <%f>",
+		.errorno = EINVAL,
 	},
 	[M_DBL_RANGE] = {
 		.condition = m_cond_dbl_in_range,
 		.fmt = "Expected in range [%f, %f], but got <%f>",
+		.errorno = EINVAL,
 	},
 	[M_DBL_NRANGE] = {
 		.condition = m_cond_dbl_not_in_range,
 		.fmt = "Expected outside range [%f, %f], but got <%f>",
+		.errorno = EINVAL,
 	},
 	[M_DBL_GT] = {
 		.condition = m_cond_dbl_greater_than,
 		.fmt = "Expected <%f> greater than <%f>",
+		.errorno = EINVAL,
 	},
 	[M_DBL_GE] = {
 		.condition = m_cond_dbl_greater_equal,
 		.fmt = "Expected <%f> greater or equal than <%f>",
+		.errorno = EINVAL,
 	},
 	[M_DBL_LT] = {
 		.condition = m_cond_dbl_less_than,
 		.fmt = "Expected <%f> less than <%f>",
+		.errorno = EINVAL,
 	},
 	[M_DBL_LE] = {
 		.condition = m_cond_dbl_less_equal,
 		.fmt = "Expected <%f> less or equal than <%f>",
+		.errorno = EINVAL,
 	},
 	[M_PTR_NOT_NULL] = {
 		.condition = m_cond_ptr_not_null,
 		.fmt = "Expected not NULL pointer, but got <%p>",
+		.errorno = EINVAL,
 	},
 	[M_PTR_NULL] = {
 		.condition = m_cond_ptr_null,
-		.fmt = "Expected NULL pointer, but got <%p>"
+		.fmt = "Expected NULL pointer, but got <%p>",
+		.errorno = EINVAL,
 	},
 	[M_MEM_EQ] = {
 		.condition = m_cond_mem_eq,
-		.fmt = "Expected the same memory content at addresses %p and %p (size: %z)"
+		.fmt = "Expected the same memory content at addresses %p and %p (size: %z)",
+		.errorno = EINVAL,
 	},
 	[M_MEM_NEQ] = {
 		.condition = m_cond_mem_neq,
-		.fmt = "Expected different memory content at addresses %p and %p (size: %z)"
+		.fmt = "Expected different memory content at addresses %p and %p (size: %z)",
+		.errorno = EINVAL,
 	},
 	[M_MEM_GT] = {
 		.condition = m_cond_mem_greater_than,
 		.fmt = "Expected the memory content at addresses %p to be greater than the memory content at address %p (size: %z)",
+		.errorno = EINVAL,
 	},
 	[M_MEM_GE] = {
 		.condition = m_cond_mem_greater_equal,
 		.fmt = "Expected the memory content at addresses %p to be greater or equal than the memory content at address %p (size: %z)",
+		.errorno = EINVAL,
 	},
 	[M_MEM_LT] = {
 		.condition = m_cond_mem_less_than,
 		.fmt = "Expected the memory content at addresses %p to be less than the memory content at address %p (size: %z)",
+		.errorno = EINVAL,
 	},
 	[M_MEM_LE] = {
 		.condition = m_cond_mem_less_equal,
 		.fmt = "Expected the memory content at addresses %p to be less or equal than the memory content at address %p (size: %z)",
+		.errorno = EINVAL,
 	},
 	[M_MEM_RANGE] = {
 		.condition = m_cond_mem_in_range,
 		.fmt = "Expected the memory content at addresses %p to be within the range defined by the memory content at %p and %p (size: %z)",
+		.errorno = EINVAL,
 	},
 	[M_MEM_NRANGE] = {
 		.condition = m_cond_mem_not_in_range,
 		.fmt = "Expected the memory content at addresses %p to be outside the range defined by the memory content at %p and %p (size: %z)",
+		.errorno = EINVAL,
 	},
 	[M_STR_EQ] = {
 		.condition = m_cond_str_eq,
-		.fmt = "Expected <%s>, but got <%s>"
+		.fmt = "Expected <%s>, but got <%s>",
+		.errorno = EINVAL,
 	},
 	[M_STR_NEQ] = {
 		.condition = m_cond_str_neq,
 		.fmt = "Expected any but not <%s>, but got <%s>",
+		.errorno = EINVAL,
 	},
 	[M_STR_GT] = {
 		.condition = m_cond_str_greater_than,
 		.fmt = "Expected <%s> greater than <%s> (ASCII order)",
+		.errorno = EINVAL,
 	},
 	[M_STR_GE] = {
 		.condition = m_cond_str_greater_equal,
 		.fmt = "Expected <%s> greater or equal than <%s> (ASCII order)",
+		.errorno = EINVAL,
 	},
 	[M_STR_LT] = {
 		.condition = m_cond_str_less_than,
 		.fmt = "Expected <%s> less than <%s> (ASCII order)",
+		.errorno = EINVAL,
 	},
 	[M_STR_LE] = {
 		.condition = m_cond_str_less_equal,
 		.fmt = "Expected <%s> less or equal than <%s> (ASCII order)",
+		.errorno = EINVAL,
 	},
 	[M_STR_RANGE] = {
 		.condition = m_cond_str_in_range,
 		.fmt = "Expected in range [%s, %s], but got <%s> (ASCII order)",
+		.errorno = EINVAL,
 	},
 	[M_STR_NRANGE] = {
 		.condition = m_cond_str_not_in_range,
 		.fmt = "Expected outside range [%s, %s], but got <%s> (ASCII order)",
+		.errorno = EINVAL,
 	},
 };
+
+
+/**
+ * It prints on stdout the given error message
+ * @param[in] type type of assertion
+ * @param[in] fmt printf string format
+ * @param[in] func function name that called this function
+ * @param[in] line source code line where this function has being called
+ * @param[in] args printf parameters
+ */
+static void  m_print_test_msg(enum m_asserts type, const char *fmt,
+			      const char *func, const unsigned int line,
+			      va_list args)
+{
+	/* print the error if there is a valid printf format */
+	if (fmt) {
+		if (type == M_CUSTOM) {
+			/* Skip first parameters */
+			va_arg(args, int);
+		        va_arg(args, int);
+			va_arg(args, char*);
+		}
+		fprintf(stdout, "ERROR @ %s():%d - ", func, line);
+		vfprintf(stdout, fmt, args);
+		fprintf(stdout, "\n");
+	}
+
+	/* Print errno message if errno is set */
+	if ((m_test_cur->suite->flags & M_ERRNO) && errno) {
+		if (m_test_cur->suite->strerror)
+			fprintf(stdout, "-- Error %d: %s --\n",
+				errno, m_test_cur->suite->strerror(errno));
+		else
+			fprintf(stdout, "-- Error %d: %s --\n",
+				errno, strerror(errno));
+	}
+}
 
 
 /**
@@ -649,74 +734,80 @@ void m_check(enum m_asserts type, unsigned long flags,
 	     ...)
 {
 	va_list args;
+	const char *fmt;
 	int cond;
 
+	/* Check condition and get print arguments */
 	va_start(args, line);
-	cond = asserts[type].condition(args);
+	if (type == M_CUSTOM) {
+		/* When custum, get all assertion data from variadic */
+		cond = va_arg(args, int);
+		errno = va_arg(args, int);
+		fmt = va_arg(args, char*);
+	} else {
+		/* Otherwas get assertion data from the table */
+		cond = asserts[type].condition(args);
+		fmt = asserts[type].fmt;
+		errno = asserts[type].errorno;
+	}
 	va_end(args);
 
 	if (cond)
-		return;
+		return; /* Condition satisfied */
 
+	/* Print the error message */
 	va_start(args, line);
-	fprintf(stdout, "ERROR @ %s():%d - ", func, line);
-	vfprintf(stdout, asserts[type].fmt, args);
-	fprintf(stdout, "\n");
+	m_print_test_msg(type, fmt, func, line, args);
 	va_end(args);
 
+	/* According to the given flag, continue test execution or jump */
 	if (flags & M_FLAG_STOP_ON_ERROR) {
 		fprintf(stdout, "  Stop test \"%s\"\n", func);
 		longjmp(global_jbuf, M_JUMP_ERROR);
 	} else {
-		fprintf(stdout, "  Continue anyway\n");
+		fprintf(stdout, "  Continue test \"%s\" anyway\n", func);
 	}
 }
 
 
 static void m_test_run(struct m_test *m_test)
 {
-	m_test->suite->total_count++;
-	m_test->state = M_STATE_RUNNING;
+	m_test_cur = m_test;
+
+	m_test_cur->suite->total_count++;
+	m_test_cur->state = M_STATE_RUNNING;
 	errno = 0;
 
-	/* Set up environment */
+	/* Test State Machine */
 	switch (setjmp(global_jbuf)) {
 	case M_NO_JUMP:
-		if (m_test->set_up)
-			m_test->set_up(m_test);
+		if (m_test_cur->set_up)
+			m_test_cur->set_up(m_test_cur);
 
 		/* Run the test */
-		if (m_test->test)
-			m_test->test(m_test);
+		if (m_test_cur->test)
+			m_test_cur->test(m_test_cur);
 
 		/* Clear the environment */
 		/* Success */
-		m_test->state = M_STATE_SUCCESS;
-		m_test->suite->success_count++;
-		if (m_test->tear_down)
-			m_test->tear_down(m_test);
+		m_test_cur->state = M_STATE_SUCCESS;
+		m_test_cur->suite->success_count++;
+		if (m_test_cur->tear_down)
+			m_test_cur->tear_down(m_test_cur);
 		break;
 	case M_JUMP_ERROR: /* test failed */
-		if ((m_test->suite->flags & M_ERRNO) && errno) {
-			if (m_test->suite->strerror)
-				fprintf(stdout, "    Error %d: %s\n",
-					errno, m_test->suite->strerror(errno));
-			else
-				fprintf(stdout, "    Error %d: %s\n",
-					errno, strerror(errno));
-		}
-		m_test->state = M_STATE_ERROR;
-		m_test->suite->fail_count++;
+		m_test_cur->state = M_STATE_ERROR;
+		m_test_cur->suite->fail_count++;
 
-		if (m_test->tear_down)
-			m_test->tear_down(m_test);
+		if (m_test_cur->tear_down)
+			m_test_cur->tear_down(m_test_cur);
 		break;
 	case M_JUMP_SKIP:
-		m_test->state = M_STATE_SKIP;
-		m_test->suite->skip_count++;
+		m_test_cur->state = M_STATE_SKIP;
+		m_test_cur->suite->skip_count++;
 
-		if (m_test->tear_down)
-			m_test->tear_down(m_test);
+		if (m_test_cur->tear_down)
+			m_test_cur->tear_down(m_test_cur);
 		break;
 	case M_JUMP_TEAR_FAIL: /* test fine, but something is wrong */
 		break;

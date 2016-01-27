@@ -1,5 +1,6 @@
 /**
  * Copyright 2015 Federico Vaga <www.federicovaga.com>
+ * @file mamma.h
  */
 
 #ifndef __M_H__
@@ -14,7 +15,8 @@
  * List of predefined assertion type
  */
 enum m_asserts {
-	M_TRUE = 0,
+	M_CUSTOM = 0,
+	M_TRUE,
 	M_FALSE,
 	M_INT_EQ,
 	M_INT_NEQ ,
@@ -127,6 +129,8 @@ struct m_suite {
 	unsigned int success_count; /**< number of successful suite's tests */
 	unsigned int fail_count; /**< number of failed suite's tests */
 	unsigned int skip_count;  /**< number of skipped suite's tests */
+	struct m_suite *subgroup;
+	unsigned int n_subgroup;
 };
 #define m_suite(_name, _test, _test_count, _up, _down, _priv) {	\
 		.name = (_name),					\
@@ -156,6 +160,19 @@ extern void m_check(enum m_asserts type, unsigned long flags,
  * @defgroup m_assert_custom Build Custum Assertions
  */
 
+/** @} */
+
+/**
+ * @defgroup m_assert_boolean Boolean Assertions
+ */
+#define m_assert_custom(_cond, _errno, _fmt, ...)		\
+        m_check(M_CUSTOM, M_FLAG_STOP_ON_ERROR,			\
+		(__func__), (__LINE__), !!(_cond), (_errno),	\
+		(_fmt), __VA_ARGS__)
+#define m_check_custom(_cond, _errno, _fmt, ...)		\
+        m_check(M_CUSTOM, M_FLAG_CONT_ON_ERROR,			\
+		(__func__), (__LINE__), !!(_cond), (_errno),	\
+		(_fmt), __VA_ARGS__)
 /** @} */
 
 /**
