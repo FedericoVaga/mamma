@@ -111,12 +111,17 @@ int main(int argc, char *argv[])
 		m_test(set_up, tear_down, test5, NULL),
 		m_test(set_up, tear_down, test6, NULL),
 	};
-	struct m_suite suite = m_suite("cut main test suite\0",
-					   tests, ARRAY_SIZE(tests),
-					   NULL, NULL, NULL);
+	struct m_suite suite = {
+		.name = "cut main test suite\0",
+		.flags = M_VERBOSE | M_ERRNO,
+		.private = NULL,
+		.tests = tests,
+		.test_count = ARRAY_SIZE(tests),
+		.set_up = NULL,
+		.tear_down = NULL,
+	};
 
-	m_suite_init(&suite);
-	m_suite_run(&suite, M_VERBOSE | M_ERRNO);
+	m_suite_run(&suite);
 
 	return 0;
 }

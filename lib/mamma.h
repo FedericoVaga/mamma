@@ -124,20 +124,11 @@ struct m_suite {
 	struct m_suite *subgroup;
 	unsigned int n_subgroup;
 };
-#define m_suite(_name, _test, _test_count, _up, _down, _priv) {	\
-		.name = (_name),					\
-			.private = (_priv),				\
-			.tests = (_test),				\
-			.test_count = (_test_count),			\
-			.set_up = (_up),				\
-			.tear_down = (_down),				\
-			}
 
 #define M_VERBOSE (1 << 0)
 #define M_ERRNO (1 << 1) /**< print errno messages */
 
-extern void m_suite_init(struct m_suite *suite);
-extern void m_suite_run(struct m_suite *m_suite, unsigned long flags);
+extern void m_suite_run(struct m_suite *m_suite);
 extern void m_skip_test(unsigned int cond,
 			 const char *func, const unsigned int line);
 

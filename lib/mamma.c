@@ -975,18 +975,19 @@ void m_skip_test(unsigned int cond, const char *func, const unsigned int line)
  *
  * @param[in] name suite name
  */
-void m_suite_init(struct m_suite *suite)
+static void m_suite_init(struct m_suite *suite)
 {
 	int i;
 
-	suite->total_count = 0;
-	suite->success_count = 0;
-	suite->fail_count = 0;
-	suite->skip_count = 0;
+	m_suite_cur = suite;
+	m_suite_cur->total_count = 0;
+	m_suite_cur->success_count = 0;
+	m_suite_cur->fail_count = 0;
+	m_suite_cur->skip_count = 0;
 
 	for (i = 0; i < suite->test_count; i++) {
-		suite->tests[i].index = i;
-		suite->tests[i].suite = suite;
+		m_suite_cur->tests[i].index = i;
+		m_suite_cur->tests[i].suite = m_suite_cur;
 	}
 }
 
@@ -1009,10 +1010,9 @@ static void m_suite_summary(struct m_suite *m_suite)
  * It runs all the tests within the given suite
  * @param[in] m_suite the suite to run
  */
-void m_suite_run(struct m_suite *m_suite, unsigned long flags)
+void m_suite_run(struct m_suite *m_suite)
 {
-	m_suite->flags = flags;
-	m_suite_cur = m_suite;
+	m_suite_init(m_suite);
 
 	if (m_suite->flags & M_VERBOSE) {
 		fprintf(stdout, "Running suite \"%s\"\n", m_suite->name);
@@ -1026,5 +1026,4 @@ void m_suite_run(struct m_suite *m_suite, unsigned long flags)
 		m_suite_summary(m_suite);
 		fprintf(stdout, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
 	}
-
 }
