@@ -905,6 +905,11 @@ static void m_test_run(struct m_test *m_test)
 }
 
 
+
+/* -------------------------------------------------------------------- */
+/*                        Test Suite Management                         */
+/* -------------------------------------------------------------------- */
+
 /**
  * It creates a test suite, in other words a collection of tests.
  *
@@ -925,11 +930,6 @@ void m_suite_init(struct m_suite *suite)
 	}
 }
 
-
-
-/* -------------------------------------------------------------------- */
-/*                        Test Suite Management                         */
-/* -------------------------------------------------------------------- */
 
 static void m_suite_summary(struct m_suite *m_suite)
 {
