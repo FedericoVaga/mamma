@@ -927,6 +927,25 @@ void m_suite_init(struct m_suite *suite)
 }
 
 
+
+/* -------------------------------------------------------------------- */
+/*                        Test Suite Management                         */
+/* -------------------------------------------------------------------- */
+
+static void m_suite_summary(struct m_suite *m_suite)
+{
+	fprintf(stdout, "Success     Fail    Skip  |   Total\n");
+	fprintf(stdout, "% 7d  % 7d % 7d  | % 7d\n",
+		m_suite->success_count,
+		m_suite->fail_count,
+		m_suite->skip_count,
+		m_suite->total_count);
+
+	assert(m_suite->success_count +
+	       m_suite->fail_count +
+	       m_suite->skip_count == m_suite->total_count);
+}
+
 /**
  * It runs all the tests within the given suite
  * @param[in] m_suite the suite to run
@@ -953,10 +972,7 @@ void m_suite_run(struct m_suite *m_suite, unsigned long flags)
 
 	if (flags & M_VERBOSE) {
 		fprintf(stdout, "------------------------------------------\n");
-		fprintf(stdout, "Total   %d\n", m_suite->total_count);
-		fprintf(stdout, "Success %d\n", m_suite->success_count);
-		fprintf(stdout, "Fail    %d\n", m_suite->fail_count);
-		fprintf(stdout, "Skip    %d\n", m_suite->skip_count);
+		m_suite_summary(m_suite);
 		fprintf(stdout, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
 	}
 
