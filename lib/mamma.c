@@ -837,18 +837,6 @@ static void m_state_tear_down(void)
  */
 static void m_state_error_skip(void)
 {
-	switch (m_test_cur->state_cur) {
-	case M_STATE_ERROR:
-		m_test_cur->suite->fail_count++;
-		break;
-	case M_STATE_SKIP:
-		m_test_cur->suite->skip_count++;
-		break;
-	default:
-		/* Should not happen */
-		assert(0);
-	}
-
 	switch (m_test_cur->state_prv) {
 	case M_STATE_SET_UP:
 	case M_STATE_RUN:
@@ -858,6 +846,17 @@ static void m_state_error_skip(void)
 		 * wrong (ERROR, SKIP, EXIT) or is not possible to recover
 		 * (TEAR_DOWN, it while loop forever)
 		 */
+		switch (m_test_cur->state_cur) {
+		case M_STATE_ERROR:
+			m_test_cur->suite->fail_count++;
+			break;
+		case M_STATE_SKIP:
+			m_test_cur->suite->skip_count++;
+			break;
+		default:
+			/* Should not happen */
+			assert(0);
+		}
 		longjmp(global_jbuf, M_STATE_TEAR_DOWN);
 	case M_STATE_TEAR_DOWN:
 		longjmp(global_jbuf, M_STATE_EXIT);
