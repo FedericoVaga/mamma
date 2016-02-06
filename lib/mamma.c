@@ -901,8 +901,8 @@ static void m_test_run(struct m_test *m_test)
 	errno = 0;
 
 	m_test_cur->state_cur = setjmp(global_jbuf);
-	if (m_test_cur->state_cur < _M_STATE_MAX)
-		state_machine[m_test_cur->state_cur]();
+	assert(m_test_cur->state_cur < _M_STATE_MAX);
+	state_machine[m_test_cur->state_cur]();
 }
 
 
