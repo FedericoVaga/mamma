@@ -57,12 +57,15 @@ enum m_asserts {
 
 
 enum m_state_machine {
-	M_STATE_TEST_SET_UP = 0, /**> Entry point state */
+	M_STATE_SUITE_SET_UP = 0,
+	M_STATE_TEST_SET_UP, /**> Test entry point state */
 	M_STATE_TEST_RUN,
 	M_STATE_TEST_TEAR_DOWN,
 	M_STATE_TEST_ERROR,
 	M_STATE_TEST_SKIP,
-	M_STATE_TEST_EXIT,
+	M_STATE_TEST_EXIT, /**> Test exit point state */
+	M_STATE_SUITE_TEAR_DOWN,
+	M_STATE_SUITE_EXIT,
 	_M_STATE_MAX,
 };
 
@@ -74,8 +77,7 @@ enum m_state_machine {
  * Data structure representing a functionality test
  */
 struct m_test {
-	enum m_state_machine state_cur; /**< current test state */
-	enum m_state_machine state_prv; /**< current test state */
+	unsigned int index;
 	struct m_suite *suite; /**< Suite test where this test belong to */
 	void *private; /**< private data that can be used by set_up() and
 			  tear_down() functions in order to pass data to

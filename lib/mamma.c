@@ -10,6 +10,8 @@
 #include "mamma.h"
 
 static jmp_buf global_jbuf; /**< jump bookmark */
+static enum m_state_machine state_cur, state_prv;
+static struct m_suite *m_suite_cur;
 static struct m_test *m_test_cur; /**< keep track of the current running test.
 				     Tests are running one after the other
 				     (they do not run in parallel); so, it is
@@ -38,27 +40,28 @@ struct m_assertion {
  */
 static void m_state_go_to(enum m_state_machine state)
 {
-	m_test_cur->state_prv = m_test_cur->state_cur;
+	state_prv = state_cur;
 	longjmp(global_jbuf, state);
 }
 
 /**
- * It runs the test procedure
+ * It set up the suite environment
  */
-static void m_state_run(void)
+static void m_state_suite_set_up(void)
 {
-	if (m_test_cur->test)
-		m_test_cur->test(m_test_cur);
+	if (m_suite_cur->set_up)
+		m_suite_cur->set_up(m_suite_cur);
 
-	m_test_cur->suite->success_count++;
+	m_test_cur = &m_suite_cur->tests[0];
 
-	m_state_go_to(M_STATE_TEST_TEAR_DOWN);
+	/* Start test execution */
+	m_state_go_to(M_STATE_TEST_SET_UP);
 }
 
 /**
  * It set up the test environment
  */
-static void m_state_set_up(void)
+static void m_state_test_set_up(void)
 {
 	m_test_cur->suite->total_count++;
 
@@ -69,9 +72,22 @@ static void m_state_set_up(void)
 }
 
 /**
- * It undo what m_state_set_up() did
+ * It runs the test procedure
  */
-static void m_state_tear_down(void)
+static void m_state_test_run(void)
+{
+	if (m_test_cur->test)
+		m_test_cur->test(m_test_cur);
+
+	m_test_cur->suite->success_count++;
+
+	m_state_go_to(M_STATE_TEST_TEAR_DOWN);
+}
+
+/**
+ * It undo what m_state_test_set_up() did
+ */
+static void m_state_test_tear_down(void)
 {
 	if (m_test_cur->tear_down)
 		m_test_cur->tear_down(m_test_cur);
@@ -82,9 +98,9 @@ static void m_state_tear_down(void)
 /**
  * It handles error
  */
-static void m_state_error_skip(void)
+static void m_state_test_error_skip(void)
 {
-	switch (m_test_cur->state_prv) {
+	switch (state_prv) {
 	case M_STATE_TEST_SET_UP:
 	case M_STATE_TEST_RUN:
 		/*
@@ -93,7 +109,7 @@ static void m_state_error_skip(void)
 		 * wrong (ERROR, SKIP, EXIT) or is not possible to recover
 		 * (TEAR_DOWN, it while loop forever)
 		 */
-		switch (m_test_cur->state_cur) {
+		switch (state_cur) {
 		case M_STATE_TEST_ERROR:
 			m_test_cur->suite->fail_count++;
 			break;
@@ -116,21 +132,49 @@ static void m_state_error_skip(void)
 /**
  * It complete the test execution
  */
-static void m_state_exit(void)
+static void m_state_test_exit(void)
+{
+	if (m_test_cur->index + 1 < m_suite_cur->test_count) {
+		m_test_cur = &m_suite_cur->tests[m_test_cur->index + 1];
+		m_state_go_to(M_STATE_TEST_SET_UP);
+	} else {
+		m_state_go_to(M_STATE_SUITE_TEAR_DOWN);
+	}
+}
+
+/**
+ * It undo what m_state_test_set_up() did
+ */
+static void m_state_suite_tear_down(void)
+{
+	if (m_suite_cur->tear_down)
+		m_suite_cur->tear_down(m_suite_cur);
+
+	m_state_go_to(M_STATE_SUITE_EXIT);
+}
+
+/**
+ * It undo what m_state_test_set_up() did
+ */
+static void m_state_suite_exit(void)
 {
 	/* Nothing to do, this is the exit point */
 }
+
 
 /**
  * List of all possible states of the state-machine
  */
 static void (*state_machine[_M_STATE_MAX])(void) = {
-	[M_STATE_TEST_RUN] = m_state_run,
-	[M_STATE_TEST_SET_UP] = m_state_set_up,
-	[M_STATE_TEST_TEAR_DOWN] = m_state_tear_down,
-	[M_STATE_TEST_ERROR] = m_state_error_skip,
-	[M_STATE_TEST_SKIP] = m_state_error_skip,
-	[M_STATE_TEST_EXIT] = m_state_exit,
+	[M_STATE_SUITE_SET_UP] = m_state_suite_set_up,
+	[M_STATE_TEST_SET_UP] = m_state_test_set_up,
+	[M_STATE_TEST_RUN] = m_state_test_run,
+	[M_STATE_TEST_TEAR_DOWN] = m_state_test_tear_down,
+	[M_STATE_TEST_ERROR] = m_state_test_error_skip,
+	[M_STATE_TEST_SKIP] = m_state_test_error_skip,
+	[M_STATE_TEST_EXIT] = m_state_test_exit,
+	[M_STATE_SUITE_TEAR_DOWN] = m_state_suite_tear_down,
+	[M_STATE_SUITE_EXIT] = m_state_suite_exit,
 };
 
 
@@ -145,14 +189,14 @@ static void (*state_machine[_M_STATE_MAX])(void) = {
  * prefer to have an unifor way to go between states
  * @param[in] m_test mamma's test to execute
  */
-static void m_test_run(struct m_test *m_test)
+static void m_suite_run_state_machine(struct m_suite *m_suite)
 {
-	m_test_cur = m_test;
+	m_suite_cur = m_suite;
 	errno = 0;
 
-	m_test_cur->state_cur = setjmp(global_jbuf);
-	assert(m_test_cur->state_cur < _M_STATE_MAX);
-	state_machine[m_test_cur->state_cur]();
+	state_cur = setjmp(global_jbuf);
+	assert(state_cur < _M_STATE_MAX);
+	state_machine[state_cur]();
 }
 
 
@@ -941,7 +985,7 @@ void m_suite_init(struct m_suite *suite)
 	suite->skip_count = 0;
 
 	for (i = 0; i < suite->test_count; i++) {
-		suite->tests[i].state_cur = M_STATE_TEST_SET_UP;
+		suite->tests[i].index = i;
 		suite->tests[i].suite = suite;
 	}
 }
@@ -967,25 +1011,17 @@ static void m_suite_summary(struct m_suite *m_suite)
  */
 void m_suite_run(struct m_suite *m_suite, unsigned long flags)
 {
-	int i;
-
 	m_suite->flags = flags;
+	m_suite_cur = m_suite;
 
-	if (flags & M_VERBOSE) {
+	if (m_suite->flags & M_VERBOSE) {
 		fprintf(stdout, "Running suite \"%s\"\n", m_suite->name);
 		fprintf(stdout, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
 	}
 
-	if (m_suite->set_up)
-		m_suite->set_up(m_suite);
-	for (i = 0; i < m_suite->test_count; i++) {
-		/* Run test */
-		m_test_run(&m_suite->tests[i]);
-	}
-	if (m_suite->tear_down)
-		m_suite->tear_down(m_suite);
+	m_suite_run_state_machine(m_suite);
 
-	if (flags & M_VERBOSE) {
+	if (m_suite->flags & M_VERBOSE) {
 		fprintf(stdout, "------------------------------------------\n");
 		m_suite_summary(m_suite);
 		fprintf(stdout, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
