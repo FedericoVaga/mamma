@@ -52,7 +52,7 @@ static void m_state_run(void)
 
 	m_test_cur->suite->success_count++;
 
-	m_state_go_to(M_STATE_TEAR_DOWN);
+	m_state_go_to(M_STATE_TEST_TEAR_DOWN);
 }
 
 /**
@@ -65,7 +65,7 @@ static void m_state_set_up(void)
 	if (m_test_cur->set_up)
 		m_test_cur->set_up(m_test_cur);
 
-	m_state_go_to(M_STATE_RUN);
+	m_state_go_to(M_STATE_TEST_RUN);
 }
 
 /**
@@ -76,7 +76,7 @@ static void m_state_tear_down(void)
 	if (m_test_cur->tear_down)
 		m_test_cur->tear_down(m_test_cur);
 
-	m_state_go_to(M_STATE_EXIT);
+	m_state_go_to(M_STATE_TEST_EXIT);
 }
 
 /**
@@ -85,8 +85,8 @@ static void m_state_tear_down(void)
 static void m_state_error_skip(void)
 {
 	switch (m_test_cur->state_prv) {
-	case M_STATE_SET_UP:
-	case M_STATE_RUN:
+	case M_STATE_TEST_SET_UP:
+	case M_STATE_TEST_RUN:
 		/*
 		 * We can jump to TEAR_DOWN state only if the state that
 		 * raised the error was SET_UP or RUN. Any other case is
@@ -94,19 +94,19 @@ static void m_state_error_skip(void)
 		 * (TEAR_DOWN, it while loop forever)
 		 */
 		switch (m_test_cur->state_cur) {
-		case M_STATE_ERROR:
+		case M_STATE_TEST_ERROR:
 			m_test_cur->suite->fail_count++;
 			break;
-		case M_STATE_SKIP:
+		case M_STATE_TEST_SKIP:
 			m_test_cur->suite->skip_count++;
 			break;
 		default:
 			/* Should not happen */
 			assert(0);
 		}
-		m_state_go_to(M_STATE_TEAR_DOWN);
-	case M_STATE_TEAR_DOWN:
-		m_state_go_to(M_STATE_EXIT);
+		m_state_go_to(M_STATE_TEST_TEAR_DOWN);
+	case M_STATE_TEST_TEAR_DOWN:
+		m_state_go_to(M_STATE_TEST_EXIT);
 	default:
 		/* Should not happen */
 		assert(0);
@@ -125,12 +125,12 @@ static void m_state_exit(void)
  * List of all possible states of the state-machine
  */
 static void (*state_machine[_M_STATE_MAX])(void) = {
-	[M_STATE_RUN] = m_state_run,
-	[M_STATE_SET_UP] = m_state_set_up,
-	[M_STATE_TEAR_DOWN] = m_state_tear_down,
-	[M_STATE_ERROR] = m_state_error_skip,
-	[M_STATE_SKIP] = m_state_error_skip,
-	[M_STATE_EXIT] = m_state_exit,
+	[M_STATE_TEST_RUN] = m_state_run,
+	[M_STATE_TEST_SET_UP] = m_state_set_up,
+	[M_STATE_TEST_TEAR_DOWN] = m_state_tear_down,
+	[M_STATE_TEST_ERROR] = m_state_error_skip,
+	[M_STATE_TEST_SKIP] = m_state_error_skip,
+	[M_STATE_TEST_EXIT] = m_state_exit,
 };
 
 
@@ -899,7 +899,7 @@ void m_check(enum m_asserts type, unsigned long flags,
 	/* According to the given flag, continue test execution or jump */
 	if (flags & M_FLAG_STOP_ON_ERROR) {
 		fprintf(stdout, "  Stop test \"%s\"\n", func);
-		m_state_go_to(M_STATE_ERROR);
+		m_state_go_to(M_STATE_TEST_ERROR);
 	} else {
 		fprintf(stdout, "  Continue test \"%s\" anyway\n", func);
 	}
@@ -917,7 +917,7 @@ void m_skip_test(unsigned int cond, const char *func, const unsigned int line)
 		return;
 	fprintf(stdout, "SKIP@%s():%d\n", func, line);
 
-	m_state_go_to(M_STATE_SKIP);
+	m_state_go_to(M_STATE_TEST_SKIP);
 }
 
 
@@ -941,7 +941,7 @@ void m_suite_init(struct m_suite *suite)
 	suite->skip_count = 0;
 
 	for (i = 0; i < suite->test_count; i++) {
-		suite->tests[i].state_cur = M_STATE_SET_UP;
+		suite->tests[i].state_cur = M_STATE_TEST_SET_UP;
 		suite->tests[i].suite = suite;
 	}
 }

@@ -57,12 +57,12 @@ enum m_asserts {
 
 
 enum m_state_machine {
-	M_STATE_SET_UP = 0, /**> Entry point state */
-	M_STATE_RUN,
-	M_STATE_TEAR_DOWN,
-	M_STATE_ERROR,
-	M_STATE_SKIP,
-	M_STATE_EXIT,
+	M_STATE_TEST_SET_UP = 0, /**> Entry point state */
+	M_STATE_TEST_RUN,
+	M_STATE_TEST_TEAR_DOWN,
+	M_STATE_TEST_ERROR,
+	M_STATE_TEST_SKIP,
+	M_STATE_TEST_EXIT,
 	_M_STATE_MAX,
 };
 
