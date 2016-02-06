@@ -899,7 +899,7 @@ void m_check(enum m_asserts type, unsigned long flags,
 	/* According to the given flag, continue test execution or jump */
 	if (flags & M_FLAG_STOP_ON_ERROR) {
 		fprintf(stdout, "  Stop test \"%s\"\n", func);
-		longjmp(global_jbuf, M_STATE_ERROR);
+		m_state_go_to(M_STATE_ERROR);
 	} else {
 		fprintf(stdout, "  Continue test \"%s\" anyway\n", func);
 	}
@@ -916,7 +916,8 @@ void m_skip_test(unsigned int cond, const char *func, const unsigned int line)
 	if (!cond)
 		return;
 	fprintf(stdout, "SKIP@%s():%d\n", func, line);
-	longjmp(global_jbuf, M_STATE_SKIP);
+
+	m_state_go_to(M_STATE_SKIP);
 }
 
 
