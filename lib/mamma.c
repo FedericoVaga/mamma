@@ -797,6 +797,16 @@ void m_skip_test(unsigned int cond, const char *func, const unsigned int line)
 /* -------------------------------------------------------------------- */
 
 /**
+ * It does the transition between states
+ * @param[in] state next state
+ */
+static void m_state_go_to(enum m_state_machine state)
+{
+	m_test_cur->state_prv = m_test_cur->state_cur;
+	longjmp(global_jbuf, state);
+}
+
+/**
  * It runs the test procedure
  */
 static void m_state_run(void)
@@ -805,7 +815,8 @@ static void m_state_run(void)
 		m_test_cur->test(m_test_cur);
 
 	m_test_cur->suite->success_count++;
-	longjmp(global_jbuf, M_STATE_TEAR_DOWN);
+
+	m_state_go_to(M_STATE_TEAR_DOWN);
 }
 
 /**
@@ -818,7 +829,7 @@ static void m_state_set_up(void)
 	if (m_test_cur->set_up)
 		m_test_cur->set_up(m_test_cur);
 
-	longjmp(global_jbuf, M_STATE_RUN);
+	m_state_go_to(M_STATE_RUN);
 }
 
 /**
@@ -829,7 +840,7 @@ static void m_state_tear_down(void)
 	if (m_test_cur->tear_down)
 		m_test_cur->tear_down(m_test_cur);
 
-	longjmp(global_jbuf, M_STATE_EXIT);
+	m_state_go_to(M_STATE_EXIT);
 }
 
 /**
@@ -857,9 +868,9 @@ static void m_state_error_skip(void)
 			/* Should not happen */
 			assert(0);
 		}
-		longjmp(global_jbuf, M_STATE_TEAR_DOWN);
+		m_state_go_to(M_STATE_TEAR_DOWN);
 	case M_STATE_TEAR_DOWN:
-		longjmp(global_jbuf, M_STATE_EXIT);
+		m_state_go_to(M_STATE_EXIT);
 	default:
 		/* Should not happen */
 		assert(0);
@@ -892,6 +903,10 @@ static void (*state_machine[_M_STATE_MAX])(void) = {
  * Running a test means activate the test state machine. This state machine is
  * based on function callback and long-jump. Each state callback knows which are
  * the next possible state and it uses a long-jump to go to the next state.
+ * I'm using the callback way because I think is better and cleaner than the
+ * switch way. I'm using long-jump to go between states because it is necessary
+ * to jump out from error condition, so instead of having transition system I
+ * prefer to have an unifor way to go between states
  * @param[in] m_test mamma's test to execute
  */
 static void m_test_run(struct m_test *m_test)
