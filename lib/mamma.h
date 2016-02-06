@@ -56,27 +56,16 @@ enum m_asserts {
 };
 
 
-/**
- * Possible test state
- */
-enum m_test_state {
-	M_STATE_STOP = 0, /**< test not yet executed */
-	M_STATE_RUNNING, /**< test is still running */
-	M_STATE_ERROR, /**< test stopped with an error */
-	M_STATE_SUCCESS, /**< test success */
-	M_STATE_SKIP, /**< test skipped */
+enum m_state_machine {
+	M_STATE_SET_UP = 0, /**> Entry point state */
+	M_STATE_RUN,
+	M_STATE_TEAR_DOWN,
+	M_STATE_ERROR,
+	M_STATE_SKIP,
+	M_STATE_EXIT,
+	_M_STATE_MAX,
 };
 
-
-/**
- * Long jump possible conditions
- */
-enum m_test_jump_conditions {
-	M_NO_JUMP = 0, /**< No jump, just normal execution */
-	M_JUMP_ERROR, /**< jump because of an error */
-	M_JUMP_SKIP, /**< jump because test skipped */
-	M_JUMP_TEAR_FAIL /**< jump because tear down function failed */,
-};
 
 #define M_FLAG_CONT_ON_ERROR (0)
 #define M_FLAG_STOP_ON_ERROR (1 << 0)
@@ -85,7 +74,8 @@ enum m_test_jump_conditions {
  * Data structure representing a functionality test
  */
 struct m_test {
-	enum m_test_state state; /**< current test state */
+	enum m_state_machine state_cur; /**< current test state */
+	enum m_state_machine state_prv; /**< current test state */
 	struct m_suite *suite; /**< Suite test where this test belong to */
 	void *private; /**< private data that can be used by set_up() and
 			  tear_down() functions in order to pass data to

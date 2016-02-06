@@ -6,6 +6,7 @@
 #include <setjmp.h>
 #include <stdarg.h>
 #include <errno.h>
+#include <assert.h>
 #include "mamma.h"
 
 static jmp_buf global_jbuf; /**< jump bookmark */
@@ -502,6 +503,7 @@ static const struct m_assertion asserts[] = {
 		.fmt = NULL,
 		.errorno = 0,
 	},
+	/* Boolean */
 	[M_TRUE] = {
 		.condition = m_cond_true,
 		.fmt = "Expected \"True\" condition but got \"False\"",
@@ -512,6 +514,7 @@ static const struct m_assertion asserts[] = {
 		.fmt = "Expected \"False\" condition but got \"True\"",
 		.errorno = EINVAL,
 	},
+	/* Integer */
 	[M_INT_EQ] = {
 		.condition = m_cond_int_equal,
 		.fmt = "Expected <%d>, but got <%d>",
@@ -552,6 +555,7 @@ static const struct m_assertion asserts[] = {
 		.fmt = "Expected <%d> less or equal than <%d>",
 		.errorno = EINVAL,
 	},
+	/* Floating Point */
 	[M_DBL_EQ] = {
 		.condition = m_cond_dbl_equal,
 		.fmt = "Expected <%f>, but got <%f>",
@@ -592,6 +596,7 @@ static const struct m_assertion asserts[] = {
 		.fmt = "Expected <%f> less or equal than <%f>",
 		.errorno = EINVAL,
 	},
+	/* Memory Pointer */
 	[M_PTR_NOT_NULL] = {
 		.condition = m_cond_ptr_not_null,
 		.fmt = "Expected not NULL pointer, but got <%p>",
@@ -602,6 +607,7 @@ static const struct m_assertion asserts[] = {
 		.fmt = "Expected NULL pointer, but got <%p>",
 		.errorno = EINVAL,
 	},
+	/* Memory Area */
 	[M_MEM_EQ] = {
 		.condition = m_cond_mem_eq,
 		.fmt = "Expected the same memory content at addresses %p and %p (size: %z)",
@@ -642,6 +648,7 @@ static const struct m_assertion asserts[] = {
 		.fmt = "Expected the memory content at addresses %p to be outside the range defined by the memory content at %p and %p (size: %z)",
 		.errorno = EINVAL,
 	},
+	/* String */
 	[M_STR_EQ] = {
 		.condition = m_cond_str_eq,
 		.fmt = "Expected <%s>, but got <%s>",
@@ -763,64 +770,120 @@ void m_check(enum m_asserts type, unsigned long flags,
 	/* According to the given flag, continue test execution or jump */
 	if (flags & M_FLAG_STOP_ON_ERROR) {
 		fprintf(stdout, "  Stop test \"%s\"\n", func);
-		switch (m_test_cur->state) {
-		case M_STATE_RUNNING:
-			longjmp(global_jbuf, M_JUMP_ERROR);
-		case M_STATE_SKIP:
-		case M_STATE_ERROR:
-			longjmp(global_jbuf, M_JUMP_TEAR_FAIL);
-		case M_STATE_SUCCESS:
-		case M_STATE_STOP:
-			break;
-		}
+		longjmp(global_jbuf, M_STATE_ERROR);
 	} else {
 		fprintf(stdout, "  Continue test \"%s\" anyway\n", func);
 	}
 }
 
 
+/**
+ * It runs the test procedure
+ */
+static void m_state_run(void)
+{
+	if (m_test_cur->test)
+		m_test_cur->test(m_test_cur);
+
+	m_test_cur->suite->success_count++;
+	longjmp(global_jbuf, M_STATE_TEAR_DOWN);
+}
+
+/**
+ * It set up the test environment
+ */
+static void m_state_set_up(void)
+{
+	m_test_cur->suite->total_count++;
+
+	if (m_test_cur->set_up)
+		m_test_cur->set_up(m_test_cur);
+
+	longjmp(global_jbuf, M_STATE_RUN);
+}
+
+/**
+ * It undo what m_state_set_up() did
+ */
+static void m_state_tear_down(void)
+{
+	if (m_test_cur->tear_down)
+		m_test_cur->tear_down(m_test_cur);
+
+	longjmp(global_jbuf, M_STATE_EXIT);
+}
+
+/**
+ * It handles error
+ */
+static void m_state_error_skip(void)
+{
+	switch (m_test_cur->state_cur) {
+	case M_STATE_ERROR:
+		m_test_cur->suite->fail_count++;
+		break;
+	case M_STATE_SKIP:
+		m_test_cur->suite->skip_count++;
+		break;
+	default:
+		/* Should not happen */
+		assert(1);
+	}
+
+	switch (m_test_cur->state_prv) {
+	case M_STATE_SET_UP:
+	case M_STATE_RUN:
+		/*
+		 * We can jump to TEAR_DOWN state only if the state that
+		 * raised the error was SET_UP or RUN. Any other case is
+		 * wrong (ERROR, SKIP, EXIT) or is not possible to recover
+		 * (TEAR_DOWN, it while loop forever)
+		 */
+		longjmp(global_jbuf, M_STATE_TEAR_DOWN);
+	case M_STATE_TEAR_DOWN:
+		longjmp(global_jbuf, M_STATE_EXIT);
+	default:
+		/* Should not happen */
+		assert(1);
+	}
+}
+
+/**
+ * It complete the test execution
+ */
+static void m_state_exit(void)
+{
+	/* Nothing to do, this is the exit point */
+}
+
+/**
+ * List of all possible states of the state-machine
+ */
+static void (*state_machine[_M_STATE_MAX])(void) = {
+	[M_STATE_RUN] = m_state_run,
+	[M_STATE_SET_UP] = m_state_set_up,
+	[M_STATE_TEAR_DOWN] = m_state_tear_down,
+	[M_STATE_ERROR] = m_state_error_skip,
+	[M_STATE_SKIP] = m_state_error_skip,
+	[M_STATE_EXIT] = m_state_exit,
+};
+
+
+/**
+ * It rungs the given test.
+ * Running a test means activate the test state machine. This state machine is
+ * based on function callback and long-jump. Each state callback knows which are
+ * the next possible state and it uses a long-jump to go to the next state.
+ * @param[in] m_test mamma's test to execute
+ */
 static void m_test_run(struct m_test *m_test)
 {
 	m_test_cur = m_test;
-
-	m_test_cur->suite->total_count++;
-	m_test_cur->state = M_STATE_RUNNING;
 	errno = 0;
 
-	/* Test State Machine */
-	switch (setjmp(global_jbuf)) {
-	case M_NO_JUMP:
-		if (m_test_cur->set_up)
-			m_test_cur->set_up(m_test_cur);
-
-		/* Run the test */
-		if (m_test_cur->test)
-			m_test_cur->test(m_test_cur);
-
-		/* Clear the environment */
-		/* Success */
-		m_test_cur->state = M_STATE_SUCCESS;
-		m_test_cur->suite->success_count++;
-		if (m_test_cur->tear_down)
-			m_test_cur->tear_down(m_test_cur);
-		break;
-	case M_JUMP_ERROR: /* test failed */
-		m_test_cur->state = M_STATE_ERROR;
-		m_test_cur->suite->fail_count++;
-
-		if (m_test_cur->tear_down)
-			m_test_cur->tear_down(m_test_cur);
-		break;
-	case M_JUMP_SKIP:
-		m_test_cur->state = M_STATE_SKIP;
-		m_test_cur->suite->skip_count++;
-
-		if (m_test_cur->tear_down)
-			m_test_cur->tear_down(m_test_cur);
-		break;
-	case M_JUMP_TEAR_FAIL: /* test fine, but something is wrong */
-		break;
-	}
+	m_test_cur->state_cur = setjmp(global_jbuf);
+	if (m_test_cur->state_cur < _M_STATE_MAX)
+		state_machine[m_test_cur->state_cur]();
 }
 
 
@@ -835,7 +898,7 @@ void m_skip_test(unsigned int cond, const char *func, const unsigned int line)
 	if (!cond)
 		return;
 	fprintf(stdout, "SKIP@%s():%d\n", func, line);
-	longjmp(global_jbuf, M_JUMP_SKIP);
+	longjmp(global_jbuf, M_STATE_SKIP);
 }
 
 /**
@@ -853,7 +916,7 @@ void m_suite_init(struct m_suite *suite)
 	suite->skip_count = 0;
 
 	for (i = 0; i < suite->test_count; i++) {
-		suite->tests[i].state = M_STATE_STOP;
+		suite->tests[i].state_cur = M_STATE_SET_UP;
 		suite->tests[i].suite = suite;
 	}
 }
