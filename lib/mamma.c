@@ -776,6 +776,25 @@ void m_check(enum m_asserts type, unsigned long flags,
 	}
 }
 
+/**
+ * It skips the current running test if the given condition is true
+ * @param[on] cond condition to evaluate
+ * @param[in] func function name that called this function
+ * @param[in] line source code line where this function has being called
+ */
+void m_skip_test(unsigned int cond, const char *func, const unsigned int line)
+{
+	if (!cond)
+		return;
+	fprintf(stdout, "SKIP@%s():%d\n", func, line);
+	longjmp(global_jbuf, M_STATE_SKIP);
+}
+
+
+
+/* -------------------------------------------------------------------- */
+/*                  Test State Machine implementation                   */
+/* -------------------------------------------------------------------- */
 
 /**
  * It runs the test procedure
@@ -886,20 +905,6 @@ static void m_test_run(struct m_test *m_test)
 		state_machine[m_test_cur->state_cur]();
 }
 
-
-/**
- * It skips the current running test if the given condition is true
- * @param[on] cond condition to evaluate
- * @param[in] func function name that called this function
- * @param[in] line source code line where this function has being called
- */
-void m_skip_test(unsigned int cond, const char *func, const unsigned int line)
-{
-	if (!cond)
-		return;
-	fprintf(stdout, "SKIP@%s():%d\n", func, line);
-	longjmp(global_jbuf, M_STATE_SKIP);
-}
 
 /**
  * It creates a test suite, in other words a collection of tests.
