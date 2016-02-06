@@ -846,7 +846,7 @@ static void m_state_error_skip(void)
 		break;
 	default:
 		/* Should not happen */
-		assert(1);
+		assert(0);
 	}
 
 	switch (m_test_cur->state_prv) {
@@ -863,7 +863,7 @@ static void m_state_error_skip(void)
 		longjmp(global_jbuf, M_STATE_EXIT);
 	default:
 		/* Should not happen */
-		assert(1);
+		assert(0);
 	}
 }
 
