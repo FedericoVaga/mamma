@@ -27,6 +27,135 @@ struct m_assertion {
 };
 
 
+
+/* -------------------------------------------------------------------- */
+/*                  Test State Machine implementation                   */
+/* -------------------------------------------------------------------- */
+
+/**
+ * It does the transition between states
+ * @param[in] state next state
+ */
+static void m_state_go_to(enum m_state_machine state)
+{
+	m_test_cur->state_prv = m_test_cur->state_cur;
+	longjmp(global_jbuf, state);
+}
+
+/**
+ * It runs the test procedure
+ */
+static void m_state_run(void)
+{
+	if (m_test_cur->test)
+		m_test_cur->test(m_test_cur);
+
+	m_test_cur->suite->success_count++;
+
+	m_state_go_to(M_STATE_TEAR_DOWN);
+}
+
+/**
+ * It set up the test environment
+ */
+static void m_state_set_up(void)
+{
+	m_test_cur->suite->total_count++;
+
+	if (m_test_cur->set_up)
+		m_test_cur->set_up(m_test_cur);
+
+	m_state_go_to(M_STATE_RUN);
+}
+
+/**
+ * It undo what m_state_set_up() did
+ */
+static void m_state_tear_down(void)
+{
+	if (m_test_cur->tear_down)
+		m_test_cur->tear_down(m_test_cur);
+
+	m_state_go_to(M_STATE_EXIT);
+}
+
+/**
+ * It handles error
+ */
+static void m_state_error_skip(void)
+{
+	switch (m_test_cur->state_prv) {
+	case M_STATE_SET_UP:
+	case M_STATE_RUN:
+		/*
+		 * We can jump to TEAR_DOWN state only if the state that
+		 * raised the error was SET_UP or RUN. Any other case is
+		 * wrong (ERROR, SKIP, EXIT) or is not possible to recover
+		 * (TEAR_DOWN, it while loop forever)
+		 */
+		switch (m_test_cur->state_cur) {
+		case M_STATE_ERROR:
+			m_test_cur->suite->fail_count++;
+			break;
+		case M_STATE_SKIP:
+			m_test_cur->suite->skip_count++;
+			break;
+		default:
+			/* Should not happen */
+			assert(0);
+		}
+		m_state_go_to(M_STATE_TEAR_DOWN);
+	case M_STATE_TEAR_DOWN:
+		m_state_go_to(M_STATE_EXIT);
+	default:
+		/* Should not happen */
+		assert(0);
+	}
+}
+
+/**
+ * It complete the test execution
+ */
+static void m_state_exit(void)
+{
+	/* Nothing to do, this is the exit point */
+}
+
+/**
+ * List of all possible states of the state-machine
+ */
+static void (*state_machine[_M_STATE_MAX])(void) = {
+	[M_STATE_RUN] = m_state_run,
+	[M_STATE_SET_UP] = m_state_set_up,
+	[M_STATE_TEAR_DOWN] = m_state_tear_down,
+	[M_STATE_ERROR] = m_state_error_skip,
+	[M_STATE_SKIP] = m_state_error_skip,
+	[M_STATE_EXIT] = m_state_exit,
+};
+
+
+/**
+ * It rungs the given test.
+ * Running a test means activate the test state machine. This state machine is
+ * based on function callback and long-jump. Each state callback knows which are
+ * the next possible state and it uses a long-jump to go to the next state.
+ * I'm using the callback way because I think is better and cleaner than the
+ * switch way. I'm using long-jump to go between states because it is necessary
+ * to jump out from error condition, so instead of having transition system I
+ * prefer to have an unifor way to go between states
+ * @param[in] m_test mamma's test to execute
+ */
+static void m_test_run(struct m_test *m_test)
+{
+	m_test_cur = m_test;
+	errno = 0;
+
+	m_test_cur->state_cur = setjmp(global_jbuf);
+	assert(m_test_cur->state_cur < _M_STATE_MAX);
+	state_machine[m_test_cur->state_cur]();
+}
+
+
 /* -------------------------------------------------------------------- */
 /* Following all implemented test conditions - comment only when needed */
 /* -------------------------------------------------------------------- */
@@ -788,135 +917,6 @@ void m_skip_test(unsigned int cond, const char *func, const unsigned int line)
 		return;
 	fprintf(stdout, "SKIP@%s():%d\n", func, line);
 	longjmp(global_jbuf, M_STATE_SKIP);
-}
-
-
-
-/* -------------------------------------------------------------------- */
-/*                  Test State Machine implementation                   */
-/* -------------------------------------------------------------------- */
-
-/**
- * It does the transition between states
- * @param[in] state next state
- */
-static void m_state_go_to(enum m_state_machine state)
-{
-	m_test_cur->state_prv = m_test_cur->state_cur;
-	longjmp(global_jbuf, state);
-}
-
-/**
- * It runs the test procedure
- */
-static void m_state_run(void)
-{
-	if (m_test_cur->test)
-		m_test_cur->test(m_test_cur);
-
-	m_test_cur->suite->success_count++;
-
-	m_state_go_to(M_STATE_TEAR_DOWN);
-}
-
-/**
- * It set up the test environment
- */
-static void m_state_set_up(void)
-{
-	m_test_cur->suite->total_count++;
-
-	if (m_test_cur->set_up)
-		m_test_cur->set_up(m_test_cur);
-
-	m_state_go_to(M_STATE_RUN);
-}
-
-/**
- * It undo what m_state_set_up() did
- */
-static void m_state_tear_down(void)
-{
-	if (m_test_cur->tear_down)
-		m_test_cur->tear_down(m_test_cur);
-
-	m_state_go_to(M_STATE_EXIT);
-}
-
-/**
- * It handles error
- */
-static void m_state_error_skip(void)
-{
-	switch (m_test_cur->state_prv) {
-	case M_STATE_SET_UP:
-	case M_STATE_RUN:
-		/*
-		 * We can jump to TEAR_DOWN state only if the state that
-		 * raised the error was SET_UP or RUN. Any other case is
-		 * wrong (ERROR, SKIP, EXIT) or is not possible to recover
-		 * (TEAR_DOWN, it while loop forever)
-		 */
-		switch (m_test_cur->state_cur) {
-		case M_STATE_ERROR:
-			m_test_cur->suite->fail_count++;
-			break;
-		case M_STATE_SKIP:
-			m_test_cur->suite->skip_count++;
-			break;
-		default:
-			/* Should not happen */
-			assert(0);
-		}
-		m_state_go_to(M_STATE_TEAR_DOWN);
-	case M_STATE_TEAR_DOWN:
-		m_state_go_to(M_STATE_EXIT);
-	default:
-		/* Should not happen */
-		assert(0);
-	}
-}
-
-/**
- * It complete the test execution
- */
-static void m_state_exit(void)
-{
-	/* Nothing to do, this is the exit point */
-}
-
-/**
- * List of all possible states of the state-machine
- */
-static void (*state_machine[_M_STATE_MAX])(void) = {
-	[M_STATE_RUN] = m_state_run,
-	[M_STATE_SET_UP] = m_state_set_up,
-	[M_STATE_TEAR_DOWN] = m_state_tear_down,
-	[M_STATE_ERROR] = m_state_error_skip,
-	[M_STATE_SKIP] = m_state_error_skip,
-	[M_STATE_EXIT] = m_state_exit,
-};
-
-
-/**
- * It rungs the given test.
- * Running a test means activate the test state machine. This state machine is
- * based on function callback and long-jump. Each state callback knows which are
- * the next possible state and it uses a long-jump to go to the next state.
- * I'm using the callback way because I think is better and cleaner than the
- * switch way. I'm using long-jump to go between states because it is necessary
- * to jump out from error condition, so instead of having transition system I
- * prefer to have an unifor way to go between states
- * @param[in] m_test mamma's test to execute
- */
-static void m_test_run(struct m_test *m_test)
-{
-	m_test_cur = m_test;
-	errno = 0;
-
-	m_test_cur->state_cur = setjmp(global_jbuf);
-	assert(m_test_cur->state_cur < _M_STATE_MAX);
-	state_machine[m_test_cur->state_cur]();
 }
 
 
