@@ -101,8 +101,22 @@ static void test6(struct m_test *m_test)
 	m_assert_int_neq(4, 4);
 }
 
+static void test_single_ok(struct m_test *m_test)
+{
+	m_assert_int_neq(4, 4);
+}
+
+static void test_single_ko(struct m_test *m_test)
+{
+	m_assert_int_neq(4, 4);
+	m_assert_int_neq(4, 5);
+}
+
+
 int main(int argc, char *argv[])
 {
+	struct m_test test_sng_ok = m_test(NULL, NULL, test_single_ok, NULL);
+	struct m_test test_sng_ko = m_test(NULL, NULL, test_single_ko, NULL);
 	struct m_test tests[] = {
 		m_test(set_up, tear_down, test1, NULL),
 		m_test(set_up, tear_down, test2, NULL),
@@ -122,6 +136,9 @@ int main(int argc, char *argv[])
 	};
 
 	m_suite_run(&suite);
+
+	m_test_run(&test_sng_ok);
+	m_test_run(&test_sng_ko);
 
 	return 0;
 }
