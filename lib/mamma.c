@@ -1027,3 +1027,19 @@ void m_suite_run(struct m_suite *m_suite)
 		fprintf(stdout, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
 	}
 }
+
+
+/**
+ * It runs a single test
+ * @param[in] m_test test to run
+ */
+void m_test_run(struct m_test *m_test)
+{
+	struct m_suite m_suite;
+
+	memset(&m_suite, 0, sizeof(struct m_suite));
+	m_suite.tests = m_test;
+	m_suite.test_count = 1;
+
+	m_suite_run(&m_suite);
+}

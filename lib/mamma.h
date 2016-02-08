@@ -108,7 +108,7 @@ struct m_suite {
 			  tear_down() functions in order to pass data to
 			  the tests */
 	struct m_test *tests; /**< list of tests */
-	const unsigned int test_count; /**< number of valid tests */
+	unsigned int test_count; /**< number of valid tests */
 	void (*set_up)(struct m_suite *m_suite); /**< run a setting up function
 						    that prepare the environment
 						    to run the tests */
@@ -128,6 +128,7 @@ struct m_suite {
 #define M_VERBOSE (1 << 0)
 #define M_ERRNO (1 << 1) /**< print errno messages */
 
+extern void m_test_run(struct m_test *m_test);
 extern void m_suite_run(struct m_suite *m_suite);
 extern void m_skip_test(unsigned int cond,
 			 const char *func, const unsigned int line);
