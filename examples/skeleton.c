@@ -46,16 +46,12 @@ int main(int argc, char *argv[])
 	};
 
 	/*
-	 * Declare the test suite and assign your test collection to it
+	 * Declare the test suite and assign your test collection to it.
+	 * Use the m_suite() macro to simplify the declaration:
+	 *    m_suite(name, flag, tests, set_up, tear_down)
 	 */
-	struct m_suite skel_suite = {
-		.name = "skeleton test",
-		.flags = 0,
-		.tests = skel_tests,
-		.test_count = ARRAY_SIZE(skel_tests),
-		.set_up = skel_set_up,
-		.tear_down = skel_tear_down,
-	};
+	struct m_suite skel_suite = m_suite("skeleton test", 0, skel_tests,
+					    skel_set_up, skel_tear_down);
 
 	/*
 	 * Execute the test suite

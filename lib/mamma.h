@@ -123,6 +123,14 @@ struct m_suite {
 	struct m_suite *subgroup;
 	unsigned int n_subgroup;
 };
+#define m_suite(_name, _flag, _tests, _up, down) {		\
+			.name = (_name),			\
+			.flags = (_flag),			\
+			.tests = (_tests),			\
+			.test_count = ARRAY_SIZE((_tests))	\
+			.set_up = (_up),			\
+			.tear_down = (_down),			\
+			}
 
 #define M_VERBOSE (1 << 0)
 #define M_ERRNO (1 << 1) /**< print errno messages */
