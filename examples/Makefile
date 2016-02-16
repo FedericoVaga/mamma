@@ -1,4 +1,5 @@
 PROGRAMS := mamma_test
+PROGRAMS += skeleton
 
 CFLAGS := -Wall -Werror -ggdb -O2 -I$(MAMMA)/lib $(EXTRACFLAGS)
 LDFLAGS := -L$(MAMMA)/lib -lmamma
