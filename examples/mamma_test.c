@@ -115,15 +115,15 @@ static void test_single_ko(struct m_test *m_test)
 
 int main(int argc, char *argv[])
 {
-	struct m_test test_sng_ok = m_test(NULL, NULL, test_single_ok, NULL);
-	struct m_test test_sng_ko = m_test(NULL, NULL, test_single_ko, NULL);
+	struct m_test test_sng_ok = m_test(NULL, test_single_ok, NULL);
+	struct m_test test_sng_ko = m_test(NULL, test_single_ko, NULL);
 	struct m_test tests[] = {
-		m_test(set_up, tear_down, test1, NULL),
-		m_test(set_up, tear_down, test2, NULL),
-		m_test(set_up, tear_down, test3, NULL),
-		m_test(set_up, tear_down, test4, NULL),
-		m_test(set_up, tear_down, test5, NULL),
-		m_test(set_up, tear_down, test6, NULL),
+		m_test(set_up, test1, tear_down),
+		m_test(NULL, test2, NULL),
+		m_test(NULL, test3, NULL),
+		m_test(NULL, test4, NULL),
+		m_test(NULL, test5, NULL),
+		m_test(NULL, test6, NULL),
 	};
 	struct m_suite suite = {
 		.name = "cut main test suite\0",

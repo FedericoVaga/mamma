@@ -90,8 +90,7 @@ struct m_test {
 						   operations done by the
 						   set_up() function */
 };
-#define m_test(_up, _down, _test, _priv) {	\
-		.private = (_priv),		\
+#define m_test(_up, _test, _down) {		\
 			.set_up = (_up),	\
 			.test = (_test),	\
 			.tear_down = (_down),	\
