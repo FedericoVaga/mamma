@@ -101,6 +101,8 @@ static void m_state_test_tear_down(void)
 static void m_state_test_error_skip(void)
 {
 	switch (state_prv) {
+	case M_STATE_SUITE_SET_UP:
+		m_state_go_to(M_STATE_SUITE_TEAR_DOWN);
 	case M_STATE_TEST_SET_UP:
 	case M_STATE_TEST_RUN:
 		/*
@@ -121,6 +123,7 @@ static void m_state_test_error_skip(void)
 			assert(0);
 		}
 		m_state_go_to(M_STATE_TEST_TEAR_DOWN);
+	case M_STATE_SUITE_TEAR_DOWN:
 	case M_STATE_TEST_TEAR_DOWN:
 		m_state_go_to(M_STATE_TEST_EXIT);
 	default:
