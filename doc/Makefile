@@ -1,10 +1,10 @@
-O ?= doxy-mamma
+GIT_VERSION = $(shell cd $(src); git describe --dirty --long --tags)
 
 all: doxygen
 
 clean:
-	$(RM) -rf $(O)
+	$(RM) -rf doxy-mamma
 doxygen:
-        GIT_VERSION=$(GIT_VERSION) OUTPUT=$(O) doxygen ./doxygen-mamma-config
+	GIT_VERSION=$(GIT_VERSION) doxygen ./doxygen-mamma-config
 
 .PHONY: all clean doxygen
