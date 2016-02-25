@@ -1,6 +1,6 @@
 Mamma is a C Unit Test framework. *Mamma* in Italian means mom. The reason
 behind this name is simple: a good mom always looks over her children behavior,
-so as the unit-test looks over our code behavior in order to make as perfer as
+so as the unit-test looks over our code behavior in order to make as perfect as
 possible.
 
 The aim of this README file is to provide you an overview of the project.
@@ -27,18 +27,18 @@ cd doc
 make doxygen
 ```
 
-# Architecure
-Mamma's architecure is based on the [Kent Back SUnit](https://web.archive.org/web/20150315073817/http://www.xprogramming.com/testfram.htm) one.
+# Architecture
+Mamma's architecture is based on the [Kent Back SUnit](https://web.archive.org/web/20150315073817/http://www.xprogramming.com/testfram.htm) one.
 The ![skeleton.c](/examples/skeleton.c) file can be used as starting point.
 It contains the basic configuration to start the development of your test
-program. To undersantd what each function/structure does, take a look also to
+program. To understand what each function/structure does, take a look also to
 the doxygen documentation.
 
 # Assertions
 The heart of the test is the assertion. Mamma's `assert` stops the test
 execution and it prints an error message that explain the reason. This framework
-provides also a less rigurous assertion called `check`. Using a `check`, the
-framework will **not** stop the test exectution; it will print the error
+provides also a less rigorous assertion called `check`. Using a `check`, the
+framework will **not** stop the test execution; it will print the error
 message and continue the test execution (it can be useful for minor controls).
 For each existent assertion it exists also its check version.
 
@@ -48,7 +48,7 @@ list of available assertions and checks.
 
 | Command                                       | Description                                               |
 | --------------------------------------------- | --------------------------------------------------------- |
-| `m_assert_int_eq(int a, int b)`               | error if the condition *a == b* is not satified           |
+| `m_assert_int_eq(int a, int b)`               | error if the condition *a == b* is not satisfied           |
 | `m_assert_int_range(int min, int max, int a)` | error if the condition *min <= a <= max* is not satisfied |
 | `m_assert_dbl_ge(int a, int b)`               | error if the condition *a > b* is not satisfied           |
 | `m_assert_mem_not_null(void *ptr)`            | error if the condition *ptr != NULL* is not satisfied     |
@@ -82,7 +82,7 @@ void teardown(struct m_test *t)
 }
 ```
 
-It is aslo possible to define a test suite context by using the variable
+It is also possible to define a test suite context by using the variable
 `m_suite->private`. The purpose is exactly the same as for tests, but extended
 to the test-suite. The suite context is accessible from a test using the
 following pointers `m_test->m_suite->private`:
@@ -112,9 +112,9 @@ callback knows which are the next possible states and it uses a long-jump to do
 the transition to the next state.
 
 I'm using the callback way (instead of switch case) because I think is better
-and the code cleaner. I'm using long-jump to go from una state to another state
+and the code cleaner. I'm using long-jump to go from a state to another state
 because it is **necessary** to jump out from an error condition; so instead of
-having a mixed transition system I prefer to have an unifor way to do
+having a mixed transition system I prefer to have an uniform way to do
 transitions between states.
 
 We can see how simple is the state machine by looking at its implementation:
@@ -157,7 +157,7 @@ static void m_state_suite_set_up(void)
 ## Assertions and Checks
 Internally all assertions and checks are handled by the same function
 `m_check()` that uses variadic parameters to be able to accept different
-parameters according tothe assertion/check type.
+parameters according to the assertion/check type.
 All assertions/checks are macros; those macros properly set the `m_check`
 parameters. For example:
 
