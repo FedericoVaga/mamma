@@ -87,6 +87,7 @@ static void m_state_test_run(void)
 	if (status.m_test_cur->test)
 		status.m_test_cur->test(status.m_test_cur);
 
+	status.m_test_cur->exit = M_STATE_EXIT_SUCCESS;
 	status.m_test_cur->suite->success_count++;
 
 	m_state_go_to(M_STATE_TEST_TEAR_DOWN);
@@ -108,6 +109,7 @@ static void m_state_test_tear_down(void)
  */
 static void m_state_test_error_skip(void)
 {
+	status.m_test_cur->exit = M_STATE_EXIT_ERROR;
 	switch (status.state_prv) {
 	case M_STATE_SUITE_SET_UP:
 		m_state_go_to(M_STATE_SUITE_TEAR_DOWN);
@@ -124,6 +126,7 @@ static void m_state_test_error_skip(void)
 			status.m_test_cur->suite->fail_count++;
 			break;
 		case M_STATE_TEST_SKIP:
+			status.m_test_cur->exit = M_STATE_EXIT_SKIP;
 			status.m_test_cur->suite->skip_count++;
 			break;
 		default:
@@ -961,6 +964,7 @@ static void m_suite_init(struct m_suite *suite)
 		status.m_suite_cur->tests[i].private = NULL;
 		status.m_suite_cur->tests[i].index = i;
 		status.m_suite_cur->tests[i].suite = status.m_suite_cur;
+		status.m_suite_cur->tests[i].exit = M_STATE_EXIT_NORUN;
 	}
 }
 

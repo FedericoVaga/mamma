@@ -75,6 +75,12 @@ enum m_state_machine {
 	_M_STATE_MAX,
 };
 
+enum m_state_machine_test_exit_cause {
+	M_STATE_EXIT_NORUN = 0,
+	M_STATE_EXIT_SUCCESS,
+	M_STATE_EXIT_SKIP,
+	M_STATE_EXIT_ERROR,
+};
 
 /**
  * It tells the state-machine to continue the execution on error
@@ -103,6 +109,7 @@ struct m_test {
 	void (*tear_down)(struct m_test *test); /**< it should reverse the
 						   operations done by the
 						   set_up() function */
+	enum m_state_machine_test_exit_cause exit;
 };
 
 /**
