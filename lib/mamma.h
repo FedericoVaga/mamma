@@ -258,7 +258,7 @@ extern void m_check(enum m_asserts type, unsigned long flags,
  */
 #define m_assert_int_eq(_exp, _val)			\
 	m_check(M_INT_EQ, M_FLAG_STOP_ON_ERROR,		\
-		(__func__), (__LINE__), (_exp), (_val))
+		(__func__), (__LINE__), (long)(_exp), (long)(_val))
 /**
  * If the given values are equal it raise an error and it stops
  * test execution
@@ -272,7 +272,7 @@ extern void m_check(enum m_asserts type, unsigned long flags,
  */
 #define m_assert_int_neq(_exp, _val)			\
 	m_check(M_INT_NEQ, M_FLAG_STOP_ON_ERROR,	\
-		(__func__), (__LINE__), (_exp), (_val))
+		(__func__), (__LINE__), (long)(_exp), (long)(_val))
 /**
  * If the expected value is not greater than the given one it raise an error
  * and it stops test execution
@@ -286,7 +286,7 @@ extern void m_check(enum m_asserts type, unsigned long flags,
  */
 #define m_assert_int_gt(_exp, _val)			\
 	m_check(M_INT_GT, M_FLAG_STOP_ON_ERROR,		\
-		(__func__), (__LINE__), (_exp), (_val))
+		(__func__), (__LINE__), (long)(_exp), (long)(_val))
 /**
  * If the expected value is not greater or equal than the given one it raise
  * an error and it stops test execution
@@ -300,7 +300,7 @@ extern void m_check(enum m_asserts type, unsigned long flags,
  */
 #define m_assert_int_ge(_exp, _val)			\
 	m_check(M_INT_GE, M_FLAG_STOP_ON_ERROR,		\
-		(__func__), (__LINE__), (_exp), (_val))
+		(__func__), (__LINE__), (long)(_exp), (long)(_val))
 /**
  * If the expected value is not less than the given one it raise an error
  * and it stops test execution
@@ -314,7 +314,7 @@ extern void m_check(enum m_asserts type, unsigned long flags,
  */
 #define m_assert_int_lt(_exp, _val)			\
 	m_check(M_INT_LT, M_FLAG_STOP_ON_ERROR,		\
-		(__func__), (__LINE__), (_exp), (_val))
+		(__func__), (__LINE__), (long)(_exp), (long)(_val))
 /**
  * If the expected value is not less or equal than the given one it raise
  * an error and it stops test execution
@@ -328,7 +328,7 @@ extern void m_check(enum m_asserts type, unsigned long flags,
  */
 #define m_assert_int_le(_exp, _val)			\
 	m_check(M_INT_LE, M_FLAG_STOP_ON_ERROR,		\
-		(__func__), (__LINE__), (_exp), (_val))
+		(__func__), (__LINE__), (long)(_exp), (long)(_val))
 /**
  * If the given value is not within the range it raise an error
  * and it stops test execution
@@ -343,7 +343,7 @@ extern void m_check(enum m_asserts type, unsigned long flags,
  */
 #define m_assert_int_range(_min, _max, _val)			\
 	m_check(M_INT_RANGE, M_FLAG_STOP_ON_ERROR,		\
-		(__func__), (__LINE__), (_min), (_max), (_val))
+		(__func__), (__LINE__), (long)(_min), (long)(_max), (long)(_val))
 /**
  * If the given value is within the range it raise an error
  * and it stops test execution
@@ -358,7 +358,7 @@ extern void m_check(enum m_asserts type, unsigned long flags,
  */
 #define m_assert_int_nrange(_min, _max, _val)			\
 	m_check(M_INT_NRANGE, M_FLAG_STOP_ON_ERROR,		\
-		(__func__), (__LINE__), (_min), (_max), (_val))
+		(__func__), (__LINE__), (long)(_min), (long)(_max), (long)(_val))
 
 /**
  * If the given values are not equal it raise an error
@@ -372,7 +372,7 @@ extern void m_check(enum m_asserts type, unsigned long flags,
  */
 #define m_check_int_eq(_exp, _val)			\
 	m_check(M_INT_EQ, M_FLAG_CONT_ON_ERROR,		\
-		(__func__), (__LINE__), (_exp), (_val))
+		(__func__), (__LINE__), (long)(_exp), (long)(_val))
 /**
  * If the given values are equal it raise an error
  *
@@ -385,7 +385,7 @@ extern void m_check(enum m_asserts type, unsigned long flags,
  */
 #define m_check_int_neq(_exp, _val)			\
 	m_check(M_INT_NEQ, M_FLAG_CONT_ON_ERROR,	\
-		(__func__), (__LINE__), (_exp), (_val))
+		(__func__), (__LINE__), (long)(_exp), (long)(_val))
 /**
  * If the expected value is not greater than the given one it raise an error
  *
@@ -398,7 +398,7 @@ extern void m_check(enum m_asserts type, unsigned long flags,
  */
 #define m_check_int_gt(_exp, _val)			\
 	m_check(M_INT_GT, M_FLAG_CONT_ON_ERROR,		\
-		(__func__), (__LINE__), (_exp), (_val))
+		(__func__), (__LINE__), (long)(_exp), (long)(_val))
 /**
  * If the expected value is not greater or equal than the given one it raise
  * an error
@@ -412,7 +412,7 @@ extern void m_check(enum m_asserts type, unsigned long flags,
  */
 #define m_check_int_ge(_exp, _val)			\
 	m_check(M_INT_GE, M_FLAG_CONT_ON_ERROR,		\
-		(__func__), (__LINE__), (_exp), (_val))
+		(__func__), (__LINE__), (long)(_exp), (long)(_val))
 /**
  * If the expected value is not less than the given one it raise an error
  *
@@ -425,7 +425,7 @@ extern void m_check(enum m_asserts type, unsigned long flags,
  */
 #define m_check_int_lt(_exp, _val)			\
 	m_check(M_INT_LT, M_FLAG_CONT_ON_ERROR,		\
-		(__func__), (__LINE__), (_exp), (_val))
+		(__func__), (__LINE__), (long)(_exp), (long)(_val))
 /**
  * If the expected value is not less or equal than the given one it raise
  * an error
@@ -439,7 +439,7 @@ extern void m_check(enum m_asserts type, unsigned long flags,
  */
 #define m_check_int_le(_exp, _val)			\
 	m_check(M_INT_LE, M_FLAG_CONT_ON_ERROR,		\
-		(__func__), (__LINE__), (_exp), (_val))
+		(__func__), (__LINE__), (long)(_exp), (long)(_val))
 /**
  * If the given value is not within the range it raise an error
  *
@@ -453,7 +453,7 @@ extern void m_check(enum m_asserts type, unsigned long flags,
  */
 #define m_check_int_range(_min, _max, _val)			\
 	m_check(M_INT_RANGE, M_FLAG_CONT_ON_ERROR,		\
-		(__func__), (__LINE__), (_min), (_max), (_val))
+		(__func__), (__LINE__), (long)(_min), (long)(_max), (long)(_val))
 /**
  * If the given value is within the range it raise an error
  *
@@ -467,7 +467,7 @@ extern void m_check(enum m_asserts type, unsigned long flags,
  */
 #define m_check_int_nrange(_min, _max, _val)			\
 	m_check(M_INT_NRANGE, M_FLAG_CONT_ON_ERROR,		\
-		(__func__), (__LINE__), (_min), (_max), (_val))
+		(__func__), (__LINE__), (long)(_min), (long)(_max), (long)(_val))
 /** @} */
 
 

@@ -240,8 +240,8 @@ static int m_cond_int_equal(va_list args)
 {
 	int a, b;
 
-	a = va_arg(args, int);
-	b = va_arg(args, int);
+	a = va_arg(args, long);
+	b = va_arg(args, long);
 
 	if (a == b) {
 		return 1;
@@ -260,8 +260,8 @@ static int m_cond_int_greater_than(va_list args)
 {
 	int a, b;
 
-	a = va_arg(args, int);
-	b = va_arg(args, int);
+	a = va_arg(args, long);
+	b = va_arg(args, long);
 
 	if (a > b) {
 		return 1;
@@ -297,9 +297,9 @@ static int m_cond_int_in_range(va_list args)
 {
 	int min, max, val;
 
-	min = va_arg(args, int);
-	max = va_arg(args, int);
-	val = va_arg(args, int);
+	min = va_arg(args, long);
+	max = va_arg(args, long);
+	val = va_arg(args, long);
 
 	if (min <= val && val <= max) {
 		return 1;
