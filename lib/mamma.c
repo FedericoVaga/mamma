@@ -30,8 +30,8 @@ static struct m_status {
  * Data structure describing an assertion
  */
 struct m_assertion {
-	int (*condition)(); /**< function that evaluate
-			       the assertion condition */
+	int (*condition)(va_list args); /**< function that evaluate
+					     the assertion condition */
 	const char *fmt; /**< error's format string */
 	const unsigned int errorno; /**< error number to use in case of error */
 };
