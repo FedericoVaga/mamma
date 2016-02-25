@@ -9,14 +9,22 @@
 #include <assert.h>
 #include "mamma.h"
 
-static jmp_buf global_jbuf; /**< jump bookmark */
-static enum m_state_machine state_cur, state_prv;
-static struct m_suite *m_suite_cur;
-static struct m_test *m_test_cur; /**< keep track of the current running test.
-				     Tests are running one after the other
-				     (they do not run in parallel); so, it is
-				     save to use this pointer to get information
-				     about the current running test)*/
+
+/**
+ * This structure represent the current status of the state machine.
+ * This structure assume that there are no parallelism among tests and
+ * test-suites. This means that all tests and test-suites run one after
+ * the other. Thanks to this assumption we can keep track of current
+ * status globally.
+ */
+static struct m_status {
+	jmp_buf global_jbuf; /**< jump bookmark */
+	enum m_state_machine state_cur; /**< current state-machine state */
+	enum m_state_machine state_prv; /**< previous state-machine state */
+	struct m_suite *m_suite_cur; /**< current test-suite running */
+	struct m_test *m_test_cur; /**< current test running */
+} status;
+
 
 /**
  * Data structure describing an assertion
@@ -40,8 +48,8 @@ struct m_assertion {
  */
 static void m_state_go_to(enum m_state_machine state)
 {
-	state_prv = state_cur;
-	longjmp(global_jbuf, state);
+	status.state_prv = status.state_cur;
+	longjmp(status.global_jbuf, state);
 }
 
 /**
@@ -49,10 +57,10 @@ static void m_state_go_to(enum m_state_machine state)
  */
 static void m_state_suite_set_up(void)
 {
-	if (m_suite_cur->set_up)
-		m_suite_cur->set_up(m_suite_cur);
+	if (status.m_suite_cur->set_up)
+		status.m_suite_cur->set_up(status.m_suite_cur);
 
-	m_test_cur = &m_suite_cur->tests[0];
+	status.m_test_cur = &status.m_suite_cur->tests[0];
 
 	/* Start test execution */
 	m_state_go_to(M_STATE_TEST_SET_UP);
@@ -63,10 +71,10 @@ static void m_state_suite_set_up(void)
  */
 static void m_state_test_set_up(void)
 {
-	m_test_cur->suite->total_count++;
+	status.m_test_cur->suite->total_count++;
 
-	if (m_test_cur->set_up)
-		m_test_cur->set_up(m_test_cur);
+	if (status.m_test_cur->set_up)
+		status.m_test_cur->set_up(status.m_test_cur);
 
 	m_state_go_to(M_STATE_TEST_RUN);
 }
@@ -76,10 +84,10 @@ static void m_state_test_set_up(void)
  */
 static void m_state_test_run(void)
 {
-	if (m_test_cur->test)
-		m_test_cur->test(m_test_cur);
+	if (status.m_test_cur->test)
+		status.m_test_cur->test(status.m_test_cur);
 
-	m_test_cur->suite->success_count++;
+	status.m_test_cur->suite->success_count++;
 
 	m_state_go_to(M_STATE_TEST_TEAR_DOWN);
 }
@@ -89,8 +97,8 @@ static void m_state_test_run(void)
  */
 static void m_state_test_tear_down(void)
 {
-	if (m_test_cur->tear_down)
-		m_test_cur->tear_down(m_test_cur);
+	if (status.m_test_cur->tear_down)
+		status.m_test_cur->tear_down(status.m_test_cur);
 
 	m_state_go_to(M_STATE_TEST_EXIT);
 }
@@ -100,7 +108,7 @@ static void m_state_test_tear_down(void)
  */
 static void m_state_test_error_skip(void)
 {
-	switch (state_prv) {
+	switch (status.state_prv) {
 	case M_STATE_SUITE_SET_UP:
 		m_state_go_to(M_STATE_SUITE_TEAR_DOWN);
 	case M_STATE_TEST_SET_UP:
@@ -111,12 +119,12 @@ static void m_state_test_error_skip(void)
 		 * wrong (ERROR, SKIP, EXIT) or is not possible to recover
 		 * (TEAR_DOWN, it while loop forever)
 		 */
-		switch (state_cur) {
+		switch (status.state_cur) {
 		case M_STATE_TEST_ERROR:
-			m_test_cur->suite->fail_count++;
+			status.m_test_cur->suite->fail_count++;
 			break;
 		case M_STATE_TEST_SKIP:
-			m_test_cur->suite->skip_count++;
+			status.m_test_cur->suite->skip_count++;
 			break;
 		default:
 			/* Should not happen */
@@ -137,8 +145,8 @@ static void m_state_test_error_skip(void)
  */
 static void m_state_test_exit(void)
 {
-	if (m_test_cur->index + 1 < m_suite_cur->test_count) {
-		m_test_cur = &m_suite_cur->tests[m_test_cur->index + 1];
+	if (status.m_test_cur->index + 1 < status.m_suite_cur->test_count) {
+		status.m_test_cur = &status.m_suite_cur->tests[status.m_test_cur->index + 1];
 		m_state_go_to(M_STATE_TEST_SET_UP);
 	} else {
 		m_state_go_to(M_STATE_SUITE_TEAR_DOWN);
@@ -150,8 +158,8 @@ static void m_state_test_exit(void)
  */
 static void m_state_suite_tear_down(void)
 {
-	if (m_suite_cur->tear_down)
-		m_suite_cur->tear_down(m_suite_cur);
+	if (status.m_suite_cur->tear_down)
+		status.m_suite_cur->tear_down(status.m_suite_cur);
 
 	m_state_go_to(M_STATE_SUITE_EXIT);
 }
@@ -194,12 +202,12 @@ static void (*state_machine[_M_STATE_MAX])(void) = {
  */
 static void m_suite_run_state_machine(struct m_suite *m_suite)
 {
-	m_suite_cur = m_suite;
+	status.m_suite_cur = m_suite;
 	errno = 0;
 
-	state_cur = setjmp(global_jbuf);
-	assert(state_cur < _M_STATE_MAX);
-	state_machine[state_cur]();
+	status.state_cur = setjmp(status.global_jbuf);
+	assert(status.state_cur < _M_STATE_MAX);
+	state_machine[status.state_cur]();
 }
 
 
@@ -894,10 +902,11 @@ static void  m_print_test_msg(enum m_asserts type, const char *fmt,
 	}
 
 	/* Print errno message if errno is set */
-	if ((m_test_cur->suite->flags & M_ERRNO) && errno) {
-		if (m_test_cur->suite->strerror)
+	if ((status.m_test_cur->suite->flags & M_ERRNO) && errno) {
+		if (status.m_test_cur->suite->strerror)
 			fprintf(stdout, "-- Error %d: %s --\n",
-				errno, m_test_cur->suite->strerror(errno));
+				errno,
+				status.m_test_cur->suite->strerror(errno));
 		else
 			fprintf(stdout, "-- Error %d: %s --\n",
 				errno, strerror(errno));
@@ -982,15 +991,17 @@ static void m_suite_init(struct m_suite *suite)
 {
 	int i;
 
-	m_suite_cur = suite;
-	m_suite_cur->total_count = 0;
-	m_suite_cur->success_count = 0;
-	m_suite_cur->fail_count = 0;
-	m_suite_cur->skip_count = 0;
+	status.m_suite_cur = suite;
+	status.m_suite_cur->total_count = 0;
+	status.m_suite_cur->success_count = 0;
+	status.m_suite_cur->fail_count = 0;
+	status.m_suite_cur->skip_count = 0;
+	status.m_suite_cur->private = NULL;
 
 	for (i = 0; i < suite->test_count; i++) {
-		m_suite_cur->tests[i].index = i;
-		m_suite_cur->tests[i].suite = m_suite_cur;
+		status.m_suite_cur->tests[i].private = NULL;
+		status.m_suite_cur->tests[i].index = i;
+		status.m_suite_cur->tests[i].suite = status.m_suite_cur;
 	}
 }
 
