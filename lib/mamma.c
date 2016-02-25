@@ -336,7 +336,7 @@ static int m_cond_dbl_equal(va_list args)
 
 static int m_cond_dbl_not_equal(va_list args)
 {
-	return !m_cond_int_equal(args);
+	return !m_cond_dbl_equal(args);
 }
 
 static int m_cond_dbl_greater_than(va_list args)
