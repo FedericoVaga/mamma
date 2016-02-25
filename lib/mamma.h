@@ -110,6 +110,7 @@ struct m_test {
 						   operations done by the
 						   set_up() function */
 	enum m_state_machine_test_exit_cause exit;
+	unsigned int warnings;
 };
 
 /**

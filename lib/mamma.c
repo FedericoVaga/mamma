@@ -919,6 +919,7 @@ void m_check(enum m_asserts type, unsigned long flags,
 		m_state_go_to(M_STATE_TEST_ERROR);
 	} else {
 		fprintf(stdout, "  Continue test \"%s\" anyway\n", func);
+		status.m_test_cur->warnings++;
 	}
 }
 
@@ -965,6 +966,7 @@ static void m_suite_init(struct m_suite *suite)
 		status.m_suite_cur->tests[i].index = i;
 		status.m_suite_cur->tests[i].suite = status.m_suite_cur;
 		status.m_suite_cur->tests[i].exit = M_STATE_EXIT_NORUN;
+		status.m_suite_cur->tests[i].warnings = 0;
 	}
 }
 
