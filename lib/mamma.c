@@ -752,42 +752,42 @@ static const struct m_assertion asserts[] = {
 	/* Memory Area */
 	[M_MEM_EQ] = {
 		.condition = m_cond_mem_eq,
-		.fmt = "Expected the same memory content at addresses %p and %p (size: %z)",
+		.fmt = "Expected the same memory content at addresses %p and %p (size: %zd)",
 		.errorno = EINVAL,
 	},
 	[M_MEM_NEQ] = {
 		.condition = m_cond_mem_neq,
-		.fmt = "Expected different memory content at addresses %p and %p (size: %z)",
+		.fmt = "Expected different memory content at addresses %p and %p (size: %zd)",
 		.errorno = EINVAL,
 	},
 	[M_MEM_GT] = {
 		.condition = m_cond_mem_greater_than,
-		.fmt = "Expected the memory content at addresses %p to be greater than the memory content at address %p (size: %z)",
+		.fmt = "Expected the memory content at addresses %p to be greater than the memory content at address %p (size: %zd)",
 		.errorno = EINVAL,
 	},
 	[M_MEM_GE] = {
 		.condition = m_cond_mem_greater_equal,
-		.fmt = "Expected the memory content at addresses %p to be greater or equal than the memory content at address %p (size: %z)",
+		.fmt = "Expected the memory content at addresses %p to be greater or equal than the memory content at address %p (size: %zd)",
 		.errorno = EINVAL,
 	},
 	[M_MEM_LT] = {
 		.condition = m_cond_mem_less_than,
-		.fmt = "Expected the memory content at addresses %p to be less than the memory content at address %p (size: %z)",
+		.fmt = "Expected the memory content at addresses %p to be less than the memory content at address %p (size: %zd)",
 		.errorno = EINVAL,
 	},
 	[M_MEM_LE] = {
 		.condition = m_cond_mem_less_equal,
-		.fmt = "Expected the memory content at addresses %p to be less or equal than the memory content at address %p (size: %z)",
+		.fmt = "Expected the memory content at addresses %p to be less or equal than the memory content at address %p (size: %zd)",
 		.errorno = EINVAL,
 	},
 	[M_MEM_RANGE] = {
 		.condition = m_cond_mem_in_range,
-		.fmt = "Expected the memory content at addresses %p to be within the range defined by the memory content at %p and %p (size: %z)",
+		.fmt = "Expected the memory content at addresses %p to be within the range defined by the memory content at %p and %p (size: %zd)",
 		.errorno = EINVAL,
 	},
 	[M_MEM_NRANGE] = {
 		.condition = m_cond_mem_not_in_range,
-		.fmt = "Expected the memory content at addresses %p to be outside the range defined by the memory content at %p and %p (size: %z)",
+		.fmt = "Expected the memory content at addresses %p to be outside the range defined by the memory content at %p and %p (size: %zd)",
 		.errorno = EINVAL,
 	},
 	/* String */
