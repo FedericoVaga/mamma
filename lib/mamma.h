@@ -8,6 +8,9 @@
 
 #include <setjmp.h>
 
+/**
+ * It computes the given array size
+ */
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 
 
@@ -56,6 +59,9 @@ enum m_asserts {
 };
 
 
+/**
+ * List of all possible state machine states
+ */
 enum m_state_machine {
 	M_STATE_SUITE_SET_UP = 0,
 	M_STATE_TEST_SET_UP, /**> Test entry point state */
@@ -70,14 +76,22 @@ enum m_state_machine {
 };
 
 
+/**
+ * It tells the state-machine to continue the execution on error
+ */
 #define M_FLAG_CONT_ON_ERROR (0)
+
+/**
+ * It tells the state-machine to stop the execution on error
+ */
 #define M_FLAG_STOP_ON_ERROR (1 << 0)
+
 
 /**
  * Data structure representing a functionality test
  */
 struct m_test {
-	unsigned int index;
+	unsigned int index; /**< test index within the test suite */
 	struct m_suite *suite; /**< Suite test where this test belong to */
 	void *private; /**< private data that can be used by set_up() and
 			  tear_down() functions in order to pass data to
@@ -90,6 +104,13 @@ struct m_test {
 						   operations done by the
 						   set_up() function */
 };
+
+/**
+ * It declare a test in a shorter way
+ * @param[in] _up set_up function to assign
+ * @param[in] _test test function to assign
+ * @param[in] _down tear_down function to assign
+ */
 #define m_test(_up, _test, _down) {		\
 			.set_up = (_up),	\
 			.test = (_test),	\
@@ -120,19 +141,33 @@ struct m_suite {
 	unsigned int success_count; /**< number of successful suite's tests */
 	unsigned int fail_count; /**< number of failed suite's tests */
 	unsigned int skip_count;  /**< number of skipped suite's tests */
-	struct m_suite *subgroup;
-	unsigned int n_subgroup;
 };
-#define m_suite(_name, _flag, _tests, _up, down) {		\
+
+/**
+ * It declare a test-suite in a shorter way
+ * @param[in] _name suite name
+ * @param[in] _flags customize test-suite execution
+ * @param[in] _tests list of tests to assign to the test-suite
+ * @param[in] _up set_up function to assign
+ * @param[in] _down tear_down function to assign
+ */
+#define m_suite(_name, _flags, _tests, _up, _down) {		\
 			.name = (_name),			\
-			.flags = (_flag),			\
+			.flags = (_flags),			\
 			.tests = (_tests),			\
-			.test_count = ARRAY_SIZE((_tests))	\
+			.test_count = ARRAY_SIZE((_tests)),	\
 			.set_up = (_up),			\
 			.tear_down = (_down),			\
 			}
 
+/**
+ * It prints out more information
+ */
 #define M_VERBOSE (1 << 0)
+
+/**
+ * It prints also ERRNO messages
+ */
 #define M_ERRNO (1 << 1) /**< print errno messages */
 
 extern void m_test_run(struct m_test *m_test);
@@ -140,6 +175,10 @@ extern void m_suite_run(struct m_suite *m_suite);
 extern void m_skip_test(unsigned int cond,
 			 const char *func, const unsigned int line);
 
+/**
+ * It skip the test if the given condition is true
+ * @param[in] _cond condition to verify
+ */
 #define m_skip(_cond) m_skip_test((_cond), __func__, __LINE__)
 
 extern void m_check(enum m_asserts type, unsigned long flags,
@@ -148,14 +187,11 @@ extern void m_check(enum m_asserts type, unsigned long flags,
 
 
 /**
- * @defgroup m_assert_custom Build Custum Assertions
+ * @addtogroup m_assert_custom Build Custum Assertions
  */
 
 /** @} */
 
-/**
- * @defgroup m_assert_boolean Boolean Assertions
- */
 #define m_assert_custom(_cond, _errno, _fmt, ...)		\
         m_check(M_CUSTOM, M_FLAG_STOP_ON_ERROR,			\
 		(__func__), (__LINE__), !!(_cond), (_errno),	\
@@ -164,313 +200,1156 @@ extern void m_check(enum m_asserts type, unsigned long flags,
         m_check(M_CUSTOM, M_FLAG_CONT_ON_ERROR,			\
 		(__func__), (__LINE__), !!(_cond), (_errno),	\
 		(_fmt), __VA_ARGS__)
-/** @} */
+
 
 /**
- * @defgroup m_assert_boolean Boolean Assertions
+ * @addtogroup m_assert_boolean Boolean Assertions and Checks
+ * @{
  */
 
-
+/**
+ * If the given condition is not true it raise an error and it stops
+ * test execution
+ * @param[in] _cond condition to evaluate
+ */
 #define m_assert_true(_cond)				\
 	m_check(M_TRUE, M_FLAG_STOP_ON_ERROR,		\
 		(__func__), (__LINE__), (_cond))
+/**
+ * If the given condition is not false it raise an error and it stops
+ * test execution
+ * @param[in] _cond condition to evaluate
+ */
 #define m_assert_false(_cond)				\
 	m_check(M_FALSE, M_FLAG_STOP_ON_ERROR,		\
 		(__func__), (__LINE__), (_cond))
-
+/**
+ * If the given condition is not true it raise an error
+ * @param[in] _cond condition to evaluate
+ */
 #define m_check_true(_cond)				\
 	m_check(M_TRUE, M_FLAG_CONT_ON_ERROR,		\
 		(__func__), (__LINE__), (_cond))
+/**
+ * If the given condition is not false it raise an error
+ * @param[in] _cond condition to evaluate
+ */
 #define m_check_false(_cond)				\
 	m_check(M_FALSE, M_FLAG_CONT_ON_ERROR,		\
 		(__func__), (__LINE__), (_cond))
+/** @} */
 
 
+/**
+ * @addtogroup m_assert_int Integer Assertions and Checks
+ * @{
+ */
+
+/**
+ * If the given values are not equal it raise an error and it stops
+ * test execution
+ *
+ * _exp == _val  OK
+ *
+ * _exp != _val  Error
+ *
+ * @param[in] _exp expected value
+ * @param[in] _val value to compare with
+ */
 #define m_assert_int_eq(_exp, _val)			\
 	m_check(M_INT_EQ, M_FLAG_STOP_ON_ERROR,		\
 		(__func__), (__LINE__), (_exp), (_val))
+/**
+ * If the given values are equal it raise an error and it stops
+ * test execution
+ *
+ * _exp != _val  OK
+ *
+ * _exp == _val  Error
+ *
+ * @param[in] _exp not expected value
+ * @param[in] _val value to compare with
+ */
 #define m_assert_int_neq(_exp, _val)			\
 	m_check(M_INT_NEQ, M_FLAG_STOP_ON_ERROR,	\
 		(__func__), (__LINE__), (_exp), (_val))
+/**
+ * If the expected value is not greater than the given one it raise an error
+ * and it stops test execution
+ *
+ * _exp > _val  OK
+ *
+ * _exp <= _val Error
+ *
+ * @param[in] _exp not expected value
+ * @param[in] _val value to compare with
+ */
 #define m_assert_int_gt(_exp, _val)			\
 	m_check(M_INT_GT, M_FLAG_STOP_ON_ERROR,		\
 		(__func__), (__LINE__), (_exp), (_val))
+/**
+ * If the expected value is not greater or equal than the given one it raise
+ * an error and it stops test execution
+ *
+ * _exp >= _val  OK
+ *
+ * _exp < _val Error
+ *
+ * @param[in] _exp not expected value
+ * @param[in] _val value to compare with
+ */
 #define m_assert_int_ge(_exp, _val)			\
 	m_check(M_INT_GE, M_FLAG_STOP_ON_ERROR,		\
 		(__func__), (__LINE__), (_exp), (_val))
+/**
+ * If the expected value is not less than the given one it raise an error
+ * and it stops test execution
+ *
+ * _exp < _val  OK
+ *
+ * _exp >= _val Error
+ *
+ * @param[in] _exp not expected value
+ * @param[in] _val value to compare with
+ */
 #define m_assert_int_lt(_exp, _val)			\
 	m_check(M_INT_LT, M_FLAG_STOP_ON_ERROR,		\
 		(__func__), (__LINE__), (_exp), (_val))
+/**
+ * If the expected value is not less or equal than the given one it raise
+ * an error and it stops test execution
+ *
+ * _exp <= _val  OK
+ *
+ * _exp > _val Error
+ *
+ * @param[in] _exp not expected value
+ * @param[in] _val value to compare with
+ */
 #define m_assert_int_le(_exp, _val)			\
 	m_check(M_INT_LE, M_FLAG_STOP_ON_ERROR,		\
 		(__func__), (__LINE__), (_exp), (_val))
+/**
+ * If the given value is not within the range it raise an error
+ * and it stops test execution
+ *
+ * _min <= _val <= _max  OK
+ *
+ * _min > _val || _max < _val Error
+ *
+ * @param[in] _min minimum expected value
+ * @param[in] _max maximum expected value
+ * @param[in] _val value to compare with
+ */
 #define m_assert_int_range(_min, _max, _val)			\
 	m_check(M_INT_RANGE, M_FLAG_STOP_ON_ERROR,		\
 		(__func__), (__LINE__), (_min), (_max), (_val))
+/**
+ * If the given value is within the range it raise an error
+ * and it stops test execution
+ *
+ * _min > _val || _max < _val OK
+ *
+ * _min <= _val <= _max  Error
+ *
+ * @param[in] _min minimum expected value
+ * @param[in] _max maximum expected value
+ * @param[in] _val value to compare with
+ */
 #define m_assert_int_nrange(_min, _max, _val)			\
 	m_check(M_INT_NRANGE, M_FLAG_STOP_ON_ERROR,		\
 		(__func__), (__LINE__), (_min), (_max), (_val))
 
+/**
+ * If the given values are not equal it raise an error
+ *
+ * _exp == _val  OK
+ *
+ * _exp != _val  Error
+ *
+ * @param[in] _exp expected value
+ * @param[in] _val value to compare with
+ */
 #define m_check_int_eq(_exp, _val)			\
 	m_check(M_INT_EQ, M_FLAG_CONT_ON_ERROR,		\
 		(__func__), (__LINE__), (_exp), (_val))
+/**
+ * If the given values are equal it raise an error
+ *
+ * _exp != _val  OK
+ *
+ * _exp == _val  Error
+ *
+ * @param[in] _exp not expected value
+ * @param[in] _val value to compare with
+ */
 #define m_check_int_neq(_exp, _val)			\
 	m_check(M_INT_NEQ, M_FLAG_CONT_ON_ERROR,	\
 		(__func__), (__LINE__), (_exp), (_val))
+/**
+ * If the expected value is not greater than the given one it raise an error
+ *
+ * _exp > _val  OK
+ *
+ * _exp <= _val Error
+ *
+ * @param[in] _exp not expected value
+ * @param[in] _val value to compare with
+ */
 #define m_check_int_gt(_exp, _val)			\
 	m_check(M_INT_GT, M_FLAG_CONT_ON_ERROR,		\
 		(__func__), (__LINE__), (_exp), (_val))
+/**
+ * If the expected value is not greater or equal than the given one it raise
+ * an error
+ *
+ * _exp >= _val  OK
+ *
+ * _exp < _val Error
+ *
+ * @param[in] _exp not expected value
+ * @param[in] _val value to compare with
+ */
 #define m_check_int_ge(_exp, _val)			\
 	m_check(M_INT_GE, M_FLAG_CONT_ON_ERROR,		\
 		(__func__), (__LINE__), (_exp), (_val))
+/**
+ * If the expected value is not less than the given one it raise an error
+ *
+ * _exp < _val  OK
+ *
+ * _exp >= _val Error
+ *
+ * @param[in] _exp not expected value
+ * @param[in] _val value to compare with
+ */
 #define m_check_int_lt(_exp, _val)			\
 	m_check(M_INT_LT, M_FLAG_CONT_ON_ERROR,		\
 		(__func__), (__LINE__), (_exp), (_val))
+/**
+ * If the expected value is not less or equal than the given one it raise
+ * an error
+ *
+ * _exp <= _val  OK
+ *
+ * _exp > _val Error
+ *
+ * @param[in] _exp not expected value
+ * @param[in] _val value to compare with
+ */
 #define m_check_int_le(_exp, _val)			\
 	m_check(M_INT_LE, M_FLAG_CONT_ON_ERROR,		\
 		(__func__), (__LINE__), (_exp), (_val))
+/**
+ * If the given value is not within the range it raise an error
+ *
+ * _min <= _val <= _max  OK
+ *
+ * _min > _val || _max < _val Error
+ *
+ * @param[in] _min minimum expected value
+ * @param[in] _max maximum expected value
+ * @param[in] _val value to compare with
+ */
 #define m_check_int_range(_min, _max, _val)			\
 	m_check(M_INT_RANGE, M_FLAG_CONT_ON_ERROR,		\
 		(__func__), (__LINE__), (_min), (_max), (_val))
+/**
+ * If the given value is within the range it raise an error
+ *
+ * _min > _val || _max < _val OK
+ *
+ * _min <= _val <= _max  Error
+ *
+ * @param[in] _min minimum expected value
+ * @param[in] _max maximum expected value
+ * @param[in] _val value to compare with
+ */
 #define m_check_int_nrange(_min, _max, _val)			\
 	m_check(M_INT_NRANGE, M_FLAG_CONT_ON_ERROR,		\
 		(__func__), (__LINE__), (_min), (_max), (_val))
+/** @} */
 
 
+/**
+ * @addtogroup m_assert_dbl Dobule Assertions and Checks
+ * @{
+ */
+/**
+ * If the given values are not equal it raise an error and it stops
+ * test execution
+ *
+ * _exp == _val  OK
+ *
+ * _exp != _val  Error
+ *
+ * @param[in] _exp expected value
+ * @param[in] _val value to compare with
+ */
 #define m_assert_dbl_eq(_exp, _val)		\
 	m_check(M_DBL_EQ, M_FLAG_STOP_ON_ERROR,	\
 		(__func__), (__LINE__),		\
 		(double)(_exp), (double)(_val))
+/**
+ * If the given values are equal it raise an error and it stops
+ * test execution
+ *
+ * _exp != _val  OK
+ *
+ * _exp == _val  Error
+ *
+ * @param[in] _exp not expected value
+ * @param[in] _val value to compare with
+ */
 #define m_assert_dbl_neq(_exp, _val)			\
 	m_check(M_DBL_NEQ, M_FLAG_STOP_ON_ERROR,	\
 		(__func__), (__LINE__),			\
 		(double)(_exp), (double)(_val))
+/**
+ * If the expected value is not greater than the given one it raise an error
+ * and it stops test execution
+ *
+ * _exp > _val  OK
+ *
+ * _exp <= _val Error
+ *
+ * @param[in] _exp not expected value
+ * @param[in] _val value to compare with
+ */
 #define m_assert_dbl_gt(_exp, _val)		\
 	m_check(M_DBL_GT, M_FLAG_STOP_ON_ERROR,	\
 		(__func__), (__LINE__),		\
 		(double)(_exp), (double)(_val))
+/**
+ * If the expected value is not greater or equal than the given one it raise
+ * an error and it stops test execution
+ *
+ * _exp >= _val  OK
+ *
+ * _exp < _val Error
+ *
+ * @param[in] _exp not expected value
+ * @param[in] _val value to compare with
+ */
 #define m_assert_dbl_ge(_exp, _val)		\
 	m_check(M_DBL_GE, M_FLAG_STOP_ON_ERROR,	\
 		(__func__), (__LINE__),		\
 		(double)(_exp), (double)(_val))
+/**
+ * If the expected value is not less than the given one it raise an error
+ * and it stops test execution
+ *
+ * _exp < _val  OK
+ *
+ * _exp >= _val Error
+ *
+ * @param[in] _exp not expected value
+ * @param[in] _val value to compare with
+ */
 #define m_assert_dbl_lt(_exp, _val)		\
 	m_check(M_DBL_LT, M_FLAG_STOP_ON_ERROR,	\
 		(__func__), (__LINE__),		\
 		(double)(_exp), (double)(_val))
+/**
+ * If the expected value is not less or equal than the given one it raise
+ * an error and it stops test execution
+ *
+ * _exp <= _val  OK
+ *
+ * _exp > _val Error
+ *
+ * @param[in] _exp not expected value
+ * @param[in] _val value to compare with
+ */
 #define m_assert_dbl_le(_exp, _val)		\
 	m_check(M_DBL_LE, M_FLAG_STOP_ON_ERROR,	\
 		(__func__), (__LINE__),		\
 		(double)(_exp), (double)(_val))
+/**
+ * If the given value is not within the range it raise an error
+ * and it stops test execution
+ *
+ * _min <= _val <= _max  OK
+ *
+ * _min > _val || _max < _val Error
+ *
+ * @param[in] _min minimum expected value
+ * @param[in] _max maximum expected value
+ * @param[in] _val value to compare with
+ */
 #define m_assert_dbl_range(_min, _max, _val)			\
 	m_check(M_DBL_RANGE, M_FLAG_STOP_ON_ERROR,		\
 		(__func__), (__LINE__),				\
 		(double)(_min), (double)(_max), (double)(_val))
+/**
+ * If the given value is within the range it raise an error
+ * and it stops test execution
+ *
+ * _min > _val || _max < _val OK
+ *
+ * _min <= _val <= _max  Error
+ *
+ * @param[in] _min minimum expected value
+ * @param[in] _max maximum expected value
+ * @param[in] _val value to compare with
+ */
 #define m_assert_dbl_nrange(_min, _max, _val)			\
 	m_check(M_DBL_NRANGE, M_FLAG_STOP_ON_ERROR,		\
 		(__func__), (__LINE__),				\
 		(double)(_min), (double)(_max), (double)(_val))
-
+/**
+ * If the given values are not equal it raise an error
+ *
+ * _exp == _val  OK
+ *
+ * _exp != _val  Error
+ *
+ * @param[in] _exp expected value
+ * @param[in] _val value to compare with
+ */
 #define m_check_dbl_eq(_exp, _val)		\
 	m_check(M_DBL_EQ, M_FLAG_CONT_ON_ERROR,	\
 		(__func__), (__LINE__),		\
 		(double)(_exp), (double)(_val))
+/**
+ * If the given values are equal it raise an error
+ *
+ * _exp != _val  OK
+ *
+ * _exp == _val  Error
+ *
+ * @param[in] _exp not expected value
+ * @param[in] _val value to compare with
+ */
 #define m_check_dbl_neq(_exp, _val)			\
 	m_check(M_DBL_NEQ, M_FLAG_CONT_ON_ERROR,	\
 		(__func__), (__LINE__),			\
 		(double)(_exp), (double)(_val))
+/**
+ * If the expected value is not greater than the given one it raise an error
+ *
+ * _exp > _val  OK
+ *
+ * _exp <= _val Error
+ *
+ * @param[in] _exp not expected value
+ * @param[in] _val value to compare with
+ */
 #define m_check_dbl_gt(_exp, _val)		\
 	m_check(M_DBL_GT, M_FLAG_CONT_ON_ERROR,	\
 		(__func__), (__LINE__),		\
 		(double)(_exp), (double)(_val))
+/**
+ * If the expected value is not greater or equal than the given one it raise
+ * an error
+ *
+ * _exp >= _val  OK
+ *
+ * _exp < _val Error
+ *
+ * @param[in] _exp not expected value
+ * @param[in] _val value to compare with
+ */
 #define m_check_dbl_ge(_exp, _val)		\
 	m_check(M_DBL_GE, M_FLAG_CONT_ON_ERROR,	\
 		(__func__), (__LINE__),		\
 		(double)(_exp), (double)(_val))
+/**
+ * If the expected value is not less than the given one it raise an error
+ *
+ * _exp < _val  OK
+ *
+ * _exp >= _val Error
+ *
+ * @param[in] _exp not expected value
+ * @param[in] _val value to compare with
+ */
 #define m_check_dbl_lt(_exp, _val)		\
 	m_check(M_DBL_LT, M_FLAG_CONT_ON_ERROR,	\
 		(__func__), (__LINE__),		\
 		(double)(_exp), (double)(_val))
+/**
+ * If the expected value is not less or equal than the given one it raise
+ * an error
+ *
+ * _exp <= _val  OK
+ *
+ * _exp > _val Error
+ *
+ * @param[in] _exp not expected value
+ * @param[in] _val value to compare with
+ */
 #define m_check_dbl_le(_exp, _val)		\
 	m_check(M_DBL_LE, M_FLAG_CONT_ON_ERROR,	\
 		(__func__), (__LINE__),		\
 		(double)(_exp), (double)(_val))
+/**
+ * If the given value is not within the range it raise an error
+ *
+ * _min <= _val <= _max  OK
+ *
+ * _min > _val || _max < _val Error
+ *
+ * @param[in] _min minimum expected value
+ * @param[in] _max maximum expected value
+ * @param[in] _val value to compare with
+ */
 #define m_check_dbl_range(_min, _max, _val)			\
 	m_check(M_DBL_RANGE, M_FLAG_CONT_ON_ERROR,		\
 		(__func__), (__LINE__),				\
 		(double)(_min), (double)(_max), (double)(_val))
+/**
+ * If the given value is within the range it raise an error
+ *
+ * _min > _val || _max < _val OK
+ *
+ * _min <= _val <= _max  Error
+ *
+ * @param[in] _min minimum expected value
+ * @param[in] _max maximum expected value
+ * @param[in] _val value to compare with
+ */
 #define m_check_dbl_nrange(_min, _max, _val)			\
 	m_check(M_DBL_NRANGE, M_FLAG_CONT_ON_ERROR,		\
 		(__func__), (__LINE__),				\
 		(double)(_min), (double)(_max), (double)(_val))
+/** @} */
 
+/**
+ * @addtogroup m_assert_mem Memory Assertions and Checks
+ * @{
+ */
 
-
+/**
+ * If the given pointer is NULL it raises an error and it stops
+ * test execution
+ *
+ * _ptr != NULL OK
+ *
+ * _ptr == NULL Error
+ *
+ * @param[in] _ptr pointer to evaluate
+ */
 #define m_assert_mem_not_null(_ptr)			\
 	m_check(M_PTR_NOT_NULL, M_FLAG_STOP_ON_ERROR,	\
 		(__func__), (__LINE__),			\
 		(void *)(_ptr))
+/**
+ * If the given pointer is not NULL it raises an error and it stops
+ * test execution
+ *
+ * _ptr == NULL OK
+ *
+ * _ptr != NULL Error
+ *
+ * @param[in] _ptr pointer to evaluate
+ */
 #define m_assert_mem_null(_ptr)				\
 	m_check(M_PTR_NULL, M_FLAG_STOP_ON_ERROR,	\
 		(__func__), (__LINE__),			\
 		(void *)(_ptr))
-#define m_assert_mem_eq(_ptr1, _ptr2, _size)				\
+/**
+ * If the given memory areas are not equal it raise an error and it stops
+ * test execution
+ *
+ * _exp == _val  OK
+ *
+ * _exp != _val  Error
+ *
+ * @param[in] _exp memory area with the expected value
+ * @param[in] _val memory area to compare with
+ * @param[in] _size memory size to evaluate
+ */
+#define m_assert_mem_eq(_exp, _val, _size)				\
 	m_check(M_MEM_EQ, M_FLAG_STOP_ON_ERROR,				\
 		(__func__), (__LINE__),					\
-		(void *)(_ptr1), (void *)(_ptr2), (size_t)(_size))
-#define m_assert_mem_neq(_ptr1, _ptr2, _size)				\
+		(void *)(_exp), (void *)(_val), (size_t)(_size))
+/**
+ * If the given memory areas are equal it raise an error and it stops
+ * test execution
+ *
+ * _exp != _val  OK
+ *
+ * _exp == _val  Error
+ *
+ * @param[in] _exp memory area with the expected value
+ * @param[in] _val memory area to compare with
+ * @param[in] _size memory size to evaluate
+ */
+#define m_assert_mem_neq(_exp, _val, _size)				\
 	m_check(M_MEM_NEQ, M_FLAG_STOP_ON_ERROR,			\
 		(__func__), (__LINE__),					\
-		(void *)(_ptr1), (void *)(_ptr2), (size_t)(_size))
-#define m_assert_mem_gt(_ptr1, _ptr2, _size)				\
+		(void *)(_exp), (void *)(_val), (size_t)(_size))
+/**
+ * If the expected memory area content is not greater than the given one
+ * it raise an error and it stops test execution
+ *
+ * _exp > _val  OK
+ *
+ * _exp <= _val Error
+ *
+ * @param[in] _exp memory area with the expected value
+ * @param[in] _val memory area to compare with
+ * @param[in] _size memory size to evaluate
+ */
+#define m_assert_mem_gt(_exp, _val, _size)				\
 	m_check(M_MEM_GT, M_FLAG_STOP_ON_ERROR,				\
 		(__func__), (__LINE__),					\
-		(void *)(_ptr1), (void *)(_ptr2), (size_t)(_size))
-#define m_assert_mem_ge(_ptr1, _ptr2, _size)				\
+		(void *)(_exp), (void *)(_val), (size_t)(_size))
+/**
+ * If the expected memory area content is not greater or equal than the given
+ * one it raise an error and it stops test execution
+ *
+ * _exp >= _val  OK
+ *
+ * _exp < _val Error
+ *
+ * @param[in] _exp memory area with the expected value
+ * @param[in] _val memory area to compare with
+ * @param[in] _size memory size to evaluate
+ */
+#define m_assert_mem_ge(_exp, _val, _size)				\
 	m_check(M_MEM_GE, M_FLAG_STOP_ON_ERROR,				\
 		(__func__), (__LINE__),					\
-		(void *)(_ptr1), (void *)(_ptr2), (size_t)(_size))
-#define m_assert_mem_lt(_ptr1, _ptr2, _size)				\
+		(void *)(_exp), (void *)(_val), (size_t)(_size))
+/**
+ * If the expected memory area content is not less than the given
+ * one it raise an error and it stops test execution
+ *
+ * _exp < _val  OK
+ *
+ * _exp >= _val Error
+ *
+ * @param[in] _exp memory area with the expected value
+ * @param[in] _val memory area to compare with
+ * @param[in] _size memory size to evaluate
+ */
+#define m_assert_mem_lt(_exp, _val, _size)				\
 	m_check(M_MEM_LT, M_FLAG_STOP_ON_ERROR,				\
 		(__func__), (__LINE__),					\
-		(void *)(_ptr1), (void *)(_ptr2), (size_t)(_size))
-#define m_assert_mem_le(_ptr1, _ptr2, _size)				\
+		(void *)(_exp), (void *)(_val), (size_t)(_size))
+/**
+ * If the expected memory area content is not less or equal than the given
+ * one it raise an error and it stops test execution
+ *
+ * _exp <= _val  OK
+ *
+ * _exp > _val Error
+ *
+ * @param[in] _exp memory area with the expected value
+ * @param[in] _val memory area to compare with
+ * @param[in] _size memory size to evaluate
+ */
+#define m_assert_mem_le(_exp, _val, _size)				\
 	m_check(M_MEM_LE, M_FLAG_STOP_ON_ERROR,				\
 		(__func__), (__LINE__),					\
-		(void *)(_ptr1), (void *)(_ptr2), (size_t)(_size))
-#define m_assert_mem_range(_ptr1, _ptr2, _ptr3, _size)			\
+		(void *)(_exp), (void *)(_val), (size_t)(_size))
+/**
+ * If the given value is not within the range it raise an error and it stops
+ * test execution
+ *
+ * _min <= _val <= _max  OK
+ *
+ * _min > _val || _max < _val Error
+ *
+ * @param[in] _min memory area with the expected minimum value
+ * @param[in] _max memory area with the expected maximum value
+ * @param[in] _val memory area to compare with
+ * @param[in] _size memory size to evaluate
+ */
+#define m_assert_mem_range(_min, _max, _val, _size)			\
 	m_check(M_MEM_RANGE, M_FLAG_STOP_ON_ERROR,			\
 		(__func__), (__LINE__),					\
-		(void *)(_ptr1), (void *)(_ptr2), (void *)(_ptr3),	\
+		(void *)(_min), (void *)(_max), (void *)(_val),		\
 		(size_t)(_size))
-#define m_assert_mem_nrange(_ptr1, _ptr2, _ptr3, _size)			\
+/**
+ * If the given value is within the range it raise an error and it stops
+ * test execution
+ *
+ * _min > _val || _max < _val OK
+ *
+ * _min <= _val <= _max  Error
+ *
+ * @param[in] _min memory area with the expected minimum value
+ * @param[in] _max memory area with the expected maximum value
+ * @param[in] _val memory area to compare with
+ * @param[in] _size memory size to evaluate
+ */
+#define m_assert_mem_nrange(_min, _max, _val, _size)			\
 	m_check(M_MEM_NRANGE, M_FLAG_STOP_ON_ERROR,			\
 		(__func__), (__LINE__),					\
-		(void *)(_ptr1), (void *)(_ptr2), (void *)(_ptr3),	\
+		(void *)(_min), (void *)(_max), (void *)(_val),		\
 		(size_t)(_size))
-
+/**
+ * If the given pointer is NULL it raises an error
+ *
+ * _ptr != NULL OK
+ *
+ * _ptr == NULL Error
+ *
+ * @param[in] _ptr pointer to evaluate
+ */
 #define m_check_mem_not_null(_ptr)			\
 	m_check(M_PTR_NOT_NULL, M_FLAG_CONT_ON_ERROR,	\
 		(__func__), (__LINE__),			\
 		(void *)(_ptr))
+/**
+ * If the given pointer is not NULL it raises an error
+ *
+ * _ptr == NULL OK
+ *
+ * _ptr != NULL Error
+ *
+ * @param[in] _ptr pointer to evaluate
+ */
 #define m_check_mem_null(_ptr)				\
 	m_check(M_PTR_NULL, M_FLAG_CONT_ON_ERROR,	\
 		(__func__), (__LINE__),			\
 		(void *)(_ptr))
-#define m_check_mem_eq(_ptr1, _ptr2, _size)				\
+/**
+ * If the given memory areas are not equal it raise an error
+ *
+ * _exp == _val  OK
+ *
+ * _exp != _val  Error
+ *
+ * @param[in] _exp memory area with the expected value
+ * @param[in] _val memory area to compare with
+ * @param[in] _size memory size to evaluate
+ */
+#define m_check_mem_eq(_exp, _val, _size)				\
 	m_check(M_MEM_EQ, M_FLAG_CONT_ON_ERROR,				\
 		(__func__), (__LINE__),					\
-		(void *)(_ptr1), (void *)(_ptr2), (size_t)(_size))
-#define m_check_mem_neq(_ptr1, _ptr2, _size)				\
+		(void *)(_exp), (void *)(_val), (size_t)(_size))
+/**
+ * If the given memory areas are equal it raise an error
+ *
+ * _exp != _val  OK
+ *
+ * _exp == _val  Error
+ *
+ * @param[in] _exp memory area with the expected value
+ * @param[in] _val memory area to compare with
+ * @param[in] _size memory size to evaluate
+ */
+#define m_check_mem_neq(_exp, _val, _size)				\
 	m_check(M_MEM_NEQ, M_FLAG_CONT_ON_ERROR,			\
 		(__func__), (__LINE__),					\
-		(void *)(_ptr1), (void *)(_ptr2), (size_t)(_size))
-#define m_check_mem_gt(_ptr1, _ptr2, _size)				\
+		(void *)(_exp), (void *)(_val), (size_t)(_size))
+/**
+ * If the expected memory area content is not greater than the given one
+ * it raise an error
+ *
+ * _exp > _val  OK
+ *
+ * _exp <= _val Error
+ *
+ * @param[in] _exp memory area with the expected value
+ * @param[in] _val memory area to compare with
+ * @param[in] _size memory size to evaluate
+ */
+#define m_check_mem_gt(_exp, _val, _size)				\
 	m_check(M_MEM_GT, M_FLAG_CONT_ON_ERROR,				\
 		(__func__), (__LINE__),					\
-		(void *)(_ptr1), (void *)(_ptr2), (size_t)(_size))
-#define m_check_mem_ge(_ptr1, _ptr2, _size)				\
+		(void *)(_exp), (void *)(_val), (size_t)(_size))
+/**
+ * If the expected memory area content is not greater or equal than the given
+ * one it raise an error
+ *
+ * _exp >= _val  OK
+ *
+ * _exp < _val Error
+ *
+ * @param[in] _exp memory area with the expected value
+ * @param[in] _val memory area to compare with
+ * @param[in] _size memory size to evaluate
+ */
+#define m_check_mem_ge(_exp, _val, _size)				\
 	m_check(M_MEM_GE, M_FLAG_CONT_ON_ERROR,				\
 		(__func__), (__LINE__),					\
-		(void *)(_ptr1), (void *)(_ptr2), (size_t)(_size))
-#define m_check_mem_lt(_ptr1, _ptr2, _size)				\
+		(void *)(_exp), (void *)(_val), (size_t)(_size))
+/**
+ * If the expected memory area content is not less than the given
+ * one it raise an error
+ *
+ * _exp < _val  OK
+ *
+ * _exp >= _val Error
+ *
+ * @param[in] _exp memory area with the expected value
+ * @param[in] _val memory area to compare with
+ * @param[in] _size memory size to evaluate
+ */
+#define m_check_mem_lt(_exp, _val, _size)				\
 	m_check(M_MEM_LT, M_FLAG_CONT_ON_ERROR,				\
 		(__func__), (__LINE__),					\
-		(void *)(_ptr1), (void *)(_ptr2), (size_t)(_size))
-#define m_check_mem_le(_ptr1, _ptr2, _size)				\
+		(void *)(_exp), (void *)(_val), (size_t)(_size))
+/**
+ * If the expected memory area content is not less or equal than the given
+ * one it raise an error
+ *
+ * _exp <= _val  OK
+ *
+ * _exp > _val Error
+ *
+ * @param[in] _exp memory area with the expected value
+ * @param[in] _val memory area to compare with
+ * @param[in] _size memory size to evaluate
+ */
+#define m_check_mem_le(_exp, _val, _size)				\
 	m_check(M_MEM_LE, M_FLAG_CONT_ON_ERROR,				\
 		(__func__), (__LINE__),					\
-		(void *)(_ptr1), (void *)(_ptr2), (size_t)(_size))
-#define m_check_mem_range(_ptr1, _ptr2, _ptr3, _size)			\
+		(void *)(_exp), (void *)(_val), (size_t)(_size))
+/**
+ * If the given value is not within the range it raise an error
+ *
+ * _min <= _val <= _max  OK
+ *
+ * _min > _val || _max < _val Error
+ *
+ * @param[in] _min memory area with the expected minimum value
+ * @param[in] _max memory area with the expected maximum value
+ * @param[in] _val memory area to compare with
+ * @param[in] _size memory size to evaluate
+ */
+#define m_check_mem_range(_min, _max, _val, _size)			\
 	m_check(M_MEM_RANGE, M_FLAG_CONT_ON_ERROR,			\
 		(__func__), (__LINE__),					\
-		(void *)(_ptr1), (void *)(_ptr2), (void *)(_ptr3),	\
+		(void *)(_min), (void *)(_max), (void *)(_val),		\
 		(size_t)(_size))
-#define m_check_mem_nrange(_ptr1, _ptr2, _ptr3, _size)			\
+/**
+ * If the given value is within the range it raise an error
+ *
+ * _min > _val || _max < _val OK
+ *
+ * _min <= _val <= _max  Error
+ *
+ * @param[in] _min memory area with the expected minimum value
+ * @param[in] _max memory area with the expected maximum value
+ * @param[in] _val memory area to compare with
+ * @param[in] _size memory size to evaluate
+ */
+#define m_check_mem_nrange(_min, _max, _val, _size)			\
 	m_check(M_MEM_NRANGE, M_FLAG_CONT_ON_ERROR,			\
 		(__func__), (__LINE__),					\
-		(void *)(_ptr1), (void *)(_ptr2), (void *)(_ptr3),	\
+		(void *)(_min), (void *)(_max), (void *)(_val),		\
 		(size_t)(_size))
+/** @} */
 
 
-
+/**
+ * @addtogroup m_assert_str String Assertions and Checks
+ * @{
+ */
+/**
+ * If the given string is NULL it raises an error and it stops
+ * test execution
+ *
+ * _ptr != NULL OK
+ *
+ * _ptr == NULL Error
+ *
+ * @param[in] _ptr pointer to evaluate
+ */
 #define m_assert_str_not_null(_ptr) m_assert_mem_not_null((_ptr))
+/**
+ * If the given string is not NULL it raises an error and it stops
+ * test execution
+ *
+ * _ptr == NULL OK
+ *
+ * _ptr != NULL Error
+ *
+ * @param[in] _ptr pointer to evaluate
+ */
 #define m_assert_str_null(_ptr) m_assert_mem_null((_ptr))
-#define m_assert_str_eq(_ptr1, _ptr2, _size)				\
+/**
+ * If the given strings are not equal it raise an error and it stops
+ * test execution
+ *
+ * _exp == _val  OK
+ *
+ * _exp != _val  Error
+ *
+ * @param[in] _exp expected strings
+ * @param[in] _val stringsto compare with
+ * @param[in] _size maximum string length
+ */
+#define m_assert_str_eq(_exp, _val, _size)				\
 	m_check(M_STR_EQ, M_FLAG_STOP_ON_ERROR,				\
 		(__func__), (__LINE__),					\
-		(char *)(_ptr1), (char *)(_ptr2), (size_t)(_size))
-#define m_assert_str_neq(_ptr1, _ptr2, _size)				\
+		(char *)(_exp), (char *)(_val), (size_t)(_size))
+/**
+ * If the given strings are equal it raise an error and it stops
+ * test execution
+ *
+ * _exp != _val  OK
+ *
+ * _exp == _val  Error
+ *
+ * @param[in] _exp expected strings
+ * @param[in] _val stringsto compare with
+ * @param[in] _size maximum string length
+ */
+#define m_assert_str_neq(_exp, _val, _size)				\
 	m_check(M_STR_NEQ, M_FLAG_STOP_ON_ERROR,			\
 		(__func__), (__LINE__),					\
-		(char *)(_ptr1), (char *)(_ptr2), (size_t)(_size))
-#define m_assert_str_gt(_ptr1, _ptr2, _size)				\
+		(char *)(_exp), (char *)(_val), (size_t)(_size))
+/**
+ * If the expected string is not greater than the given one
+ * it raise an error and it stops test execution
+ *
+ * _exp > _val  OK
+ *
+ * _exp <= _val Error
+ *
+ * @param[in] _exp expected strings
+ * @param[in] _val stringsto compare with
+ * @param[in] _size maximum string length
+ */
+#define m_assert_str_gt(_exp, _val, _size)				\
 	m_check(M_STR_GT, M_FLAG_STOP_ON_ERROR,				\
 		(__func__), (__LINE__),					\
-		(char *)(_ptr1), (char *)(_ptr2), (size_t)(_size))
-#define m_assert_str_ge(_ptr1, _ptr2, _size)				\
+		(char *)(_exp), (char *)(_val), (size_t)(_size))
+/**
+ * If the expected string is not greater or equal than the given
+ * one it raise an error and it stops test execution
+ *
+ * _exp >= _val  OK
+ *
+ * _exp < _val Error
+ *
+ * @param[in] _exp expected strings
+ * @param[in] _val stringsto compare with
+ * @param[in] _size maximum string length
+ */
+#define m_assert_str_ge(_exp, _val, _size)				\
 	m_check(M_STR_GE, M_FLAG_STOP_ON_ERROR,				\
 		(__func__), (__LINE__),					\
-		(char *)(_ptr1), (char *)(_ptr2), (size_t)(_size))
-#define m_assert_str_lt(_ptr1, _ptr2, _size)				\
+		(char *)(_exp), (char *)(_val), (size_t)(_size))
+/**
+ * If the expected string is not less than the given
+ * one it raise an error and it stops test execution
+ *
+ * _exp < _val  OK
+ *
+ * _exp >= _val Error
+ *
+ * @param[in] _exp expected strings
+ * @param[in] _val stringsto compare with
+ * @param[in] _size maximum string length
+ */
+#define m_assert_str_lt(_exp, _val, _size)				\
 	m_check(M_STR_LT, M_FLAG_STOP_ON_ERROR,				\
 		(__func__), (__LINE__),					\
-		(char *)(_ptr1), (char *)(_ptr2), (size_t)(_size))
-#define m_assert_str_le(_ptr1, _ptr2, _size)				\
+		(char *)(_exp), (char *)(_val), (size_t)(_size))
+/**
+ * If the expected string is not less or equal than the given
+ * one it raise an error and it stops test execution
+ *
+ * _exp <= _val  OK
+ *
+ * _exp > _val Error
+ *
+ * @param[in] _exp expected strings
+ * @param[in] _val stringsto compare with
+ * @param[in] _size maximum string length
+ */
+#define m_assert_str_le(_exp, _val, _size)				\
 	m_check(M_STR_LE, M_FLAG_STOP_ON_ERROR,				\
 		(__func__), (__LINE__),					\
-		(char *)(_ptr1), (char *)(_ptr2), (size_t)(_size))
-#define m_assert_str_range(_ptr1, _ptr2, _ptr3, _size)			\
+		(char *)(_exp), (char *)(_val), (size_t)(_size))
+/**
+ * If the given string is not within the range it raise an error and it stops
+ * test execution
+ *
+ * _min <= _val <= _max  OK
+ *
+ * _min > _val || _max < _val Error
+ *
+ * @param[in] _min expected minumum string
+ * @param[in] _max expected maximum string
+ * @param[in] _val string to compare with
+ * @param[in] _size maximum string length
+ */
+#define m_assert_str_range(_min, _max, _val, _size)			\
 	m_check(M_STR_RANGE, M_FLAG_STOP_ON_ERROR,			\
 		(__func__), (__LINE__),					\
-		(char *)(_ptr1), (char *)(_ptr2), (char *)(_ptr3),	\
+		(char *)(_min), (char *)(_max), (char *)(_val),		\
 		(size_t)(_size))
-#define m_assert_str_nrange(_ptr1, _ptr2, _ptr3, _size)			\
+/**
+ * If the given value is within the range it raise an error and it stops
+ * test execution
+ *
+ * _min > _val || _max < _val OK
+ *
+ * _min <= _val <= _max  Error
+ *
+ * @param[in] _min expected minumum string
+ * @param[in] _max expected maximum string
+ * @param[in] _val string to compare with
+ * @param[in] _size maximum string length
+ */
+#define m_assert_str_nrange(_min, _max, _val, _size)			\
 	m_check(M_STR_NRANGE, M_FLAG_STOP_ON_ERROR,			\
 		(__func__), (__LINE__),					\
-		(char *)(_ptr1), (char *)(_ptr2), (char *)(_ptr3),	\
+		(char *)(_min), (char *)(_max), (char *)(_val),		\
 		(size_t)(_size))
 
+/**
+ * If the given string is NULL it raises an error
+ *
+ * _ptr != NULL OK
+ *
+ * _ptr == NULL Error
+ *
+ * @param[in] _ptr pointer to evaluate
+ */
 #define m_check_str_not_null(_ptr)			\
 	m_check(M_PTR_NOT_NULL, M_FLAG_CONT_ON_ERROR,	\
 		(__func__), (__LINE__),			\
 		(char *)(_ptr))
+/**
+ * If the given string is not NULL it raises an error
+ *
+ * _ptr == NULL OK
+ *
+ * _ptr != NULL Error
+ *
+ * @param[in] _ptr pointer to evaluate
+ */
 #define m_check_str_null(_ptr)				\
 	m_check(M_PTR_NULL, M_FLAG_CONT_ON_ERROR,	\
 		(__func__), (__LINE__),			\
 		(char *)(_ptr))
-#define m_check_str_eq(_ptr1, _ptr2, _size)				\
+/**
+ * If the given strings are not equal it raise an error
+ *
+ * _exp == _val  OK
+ *
+ * _exp != _val  Error
+ *
+ * @param[in] _exp expected strings
+ * @param[in] _val stringsto compare with
+ * @param[in] _size maximum string length
+ */
+#define m_check_str_eq(_exp, _val, _size)				\
 	m_check(M_STR_EQ, M_FLAG_CONT_ON_ERROR,				\
 		(__func__), (__LINE__),					\
-		(char *)(_ptr1), (char *)(_ptr2), (size_t)(_size))
-#define m_check_str_neq(_ptr1, _ptr2, _size)				\
+		(char *)(_exp), (char *)(_val), (size_t)(_size))
+/**
+ * If the given strings are equal it raise an error
+ *
+ * _exp != _val  OK
+ *
+ * _exp == _val  Error
+ *
+ * @param[in] _exp expected strings
+ * @param[in] _val stringsto compare with
+ * @param[in] _size maximum string length
+ */
+#define m_check_str_neq(_exp, _val, _size)				\
 	m_check(M_STR_NEQ, M_FLAG_CONT_ON_ERROR,			\
 		(__func__), (__LINE__),					\
-		(char *)(_ptr1), (char *)(_ptr2), (size_t)(_size))
-#define m_check_str_gt(_ptr1, _ptr2, _size)				\
+		(char *)(_exp), (char *)(_val), (size_t)(_size))
+/**
+ * If the expected string is not greater than the given one
+ * it raise an error
+ *
+ * _exp > _val  OK
+ *
+ * _exp <= _val Error
+ *
+ * @param[in] _exp expected strings
+ * @param[in] _val stringsto compare with
+ * @param[in] _size maximum string length
+ */
+#define m_check_str_gt(_exp, _val, _size)				\
 	m_check(M_STR_GT, M_FLAG_CONT_ON_ERROR,				\
 		(__func__), (__LINE__),					\
-		(char *)(_ptr1), (char *)(_ptr2), (size_t)(_size))
-#define m_check_str_ge(_ptr1, _ptr2, _size)				\
+		(char *)(_exp), (char *)(_val), (size_t)(_size))
+/**
+ * If the expected string is not greater or equal than the given
+ * one it raise an error
+ *
+ * _exp >= _val  OK
+ *
+ * _exp < _val Error
+ *
+ * @param[in] _exp expected strings
+ * @param[in] _val stringsto compare with
+ * @param[in] _size maximum string length
+ */
+#define m_check_str_ge(_exp, _val, _size)				\
 	m_check(M_STR_GE, M_FLAG_CONT_ON_ERROR,				\
 		(__func__), (__LINE__),					\
-		(char *)(_ptr1), (char *)(_ptr2), (size_t)(_size))
-#define m_check_str_lt(_ptr1, _ptr2, _size)				\
+		(char *)(_exp), (char *)(_val), (size_t)(_size))
+/**
+ * If the expected string is not less than the given
+ * one it raise an error
+ *
+ * _exp < _val  OK
+ *
+ * _exp >= _val Error
+ *
+ * @param[in] _exp expected strings
+ * @param[in] _val stringsto compare with
+ * @param[in] _size maximum string length
+ */
+#define m_check_str_lt(_exp, _val, _size)				\
 	m_check(M_STR_LT, M_FLAG_CONT_ON_ERROR,				\
 		(__func__), (__LINE__),					\
-		(char *)(_ptr1), (char *)(_ptr2), (size_t)(_size))
-#define m_check_str_le(_ptr1, _ptr2, _size)				\
+		(char *)(_exp), (char *)(_val), (size_t)(_size))
+/**
+ * If the expected string is not less or equal than the given
+ * one it raise an error
+ *
+ * _exp <= _val  OK
+ *
+ * _exp > _val Error
+ *
+ * @param[in] _exp expected strings
+ * @param[in] _val stringsto compare with
+ * @param[in] _size maximum string length
+ */
+#define m_check_str_le(_exp, _val, _size)				\
 	m_check(M_STR_LE, M_FLAG_CONT_ON_ERROR,				\
 		(__func__), (__LINE__),					\
-		(char *)(_ptr1), (char *)(_ptr2), (size_t)(_size))
-#define m_check_str_range(_ptr1, _ptr2, _ptr3, _size)			\
+		(char *)(_exp), (char *)(_val), (size_t)(_size))
+/**
+ * If the given string is not within the range it raise an error
+ *
+ * _min <= _val <= _max  OK
+ *
+ * _min > _val || _max < _val Error
+ *
+ * @param[in] _min expected minumum string
+ * @param[in] _max expected maximum string
+ * @param[in] _val string to compare with
+ * @param[in] _size maximum string length
+ */
+#define m_check_str_range(_min, _max, _val, _size)			\
 	m_check(M_STR_RANGE, M_FLAG_CONT_ON_ERROR,			\
 		(__func__), (__LINE__),					\
-		(char *)(_ptr1), (char *)(_ptr2), (char *)(_ptr3),	\
+		(char *)(_min), (char *)(_max), (char *)(_val),		\
 		(size_t)(_size))
-#define m_check_str_nrange(_ptr1, _ptr2, _ptr3, _size)			\
+/**
+ * If the given value is within the range it raise an error
+ *
+ * _min > _val || _max < _val OK
+ *
+ * _min <= _val <= _max  Error
+ *
+ * @param[in] _min expected minumum string
+ * @param[in] _max expected maximum string
+ * @param[in] _val string to compare with
+ * @param[in] _size maximum string length
+ */
+#define m_check_str_nrange(_min, _max, _val, _size)			\
 	m_check(M_STR_NRANGE, M_FLAG_CONT_ON_ERROR,			\
 		(__func__), (__LINE__),					\
-		(char *)(_ptr1), (char *)(_ptr2), (char *)(_ptr3),	\
+		(char *)(_min), (char *)(_max), (char *)(_val),		\
 		(size_t)(_size))
+/** @} */
 
 #endif

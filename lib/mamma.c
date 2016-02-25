@@ -215,16 +215,6 @@ static void m_suite_run_state_machine(struct m_suite *m_suite)
 /* Following all implemented test conditions - comment only when needed */
 /* -------------------------------------------------------------------- */
 
-
-/**
- * @defgroup m_assert_boolean Boolean Assertions
- */
-
-/**
- * @def m_assert_true(_cond)
- * It raise an error if the given condition is not true
- * @param[in] _cond condition to evaluate
- */
 static int m_cond_true(va_list args)
 {
 	int cond;
@@ -239,24 +229,12 @@ static int m_cond_true(va_list args)
 	}
 }
 
-
-/**
- * @def m_assert_false(_cond)
- * It raise an error if the given condition is not true
- * @param[in] _cond condition to evaluate
- */
 static int m_cond_false(va_list args)
 {
 	return !m_cond_true(args);
 }
 
-/** @} */
 
-
-
-/**
- * @defgroup m_assert_int Integer Assertions
- */
 
 static int m_cond_int_equal(va_list args)
 {
@@ -336,13 +314,7 @@ static int m_cond_int_not_in_range(va_list args)
 	return !m_cond_int_in_range(args);
 }
 
-/** @} */
 
-
-
-/**
- * @defgroup m_assert_dbl Float Assertions
- */
 
 static int m_cond_dbl_equal(va_list args)
 {
@@ -422,13 +394,7 @@ static int m_cond_dbl_not_in_range(va_list args)
 	return !m_cond_dbl_in_range(args);
 }
 
-/** @} */
 
-
-
-/**
- * @defgroup m_assert_mem Memory Assertions
- */
 
 static int m_cond_ptr_null(va_list args)
 {
@@ -561,13 +527,6 @@ static int m_cond_mem_not_in_range(va_list args)
 	}
 }
 
-/** @} */
-
-
-
-/**
- * @defgroup m_assert_str String Assertions
- */
 
 static int m_cond_str_eq(va_list args)
 {
@@ -670,7 +629,6 @@ static int m_cond_str_not_in_range(va_list args)
 	}
 }
 
-/** @} */
 
 /* -------------------------------------------------------------------- */
 /*                Finish of test conditions implementation              */
@@ -963,7 +921,7 @@ void m_check(enum m_asserts type, unsigned long flags,
 
 /**
  * It skips the current running test if the given condition is true
- * @param[on] cond condition to evaluate
+ * @param[in] cond condition to evaluate
  * @param[in] func function name that called this function
  * @param[in] line source code line where this function has being called
  */
@@ -983,9 +941,10 @@ void m_skip_test(unsigned int cond, const char *func, const unsigned int line)
 /* -------------------------------------------------------------------- */
 
 /**
- * It creates a test suite, in other words a collection of tests.
- *
- * @param[in] name suite name
+ * It initialize a given test suite.
+ * It resets all counters, and properly configure the tests in order
+ * to be executed within the suite
+ * @param[in] suite test suite to initialize
  */
 static void m_suite_init(struct m_suite *suite)
 {
@@ -1006,6 +965,10 @@ static void m_suite_init(struct m_suite *suite)
 }
 
 
+/**
+ * It prints a summary of all executed test.
+ * @param[in] m_suite the suite that we are interested in
+ */
 static void m_suite_summary(struct m_suite *m_suite)
 {
 	fprintf(stdout, "Success     Fail    Skip  |   Total\n");
@@ -1015,10 +978,12 @@ static void m_suite_summary(struct m_suite *m_suite)
 		m_suite->skip_count,
 		m_suite->total_count);
 
+	/* Be sure that the state machine is working */
 	assert(m_suite->success_count +
 	       m_suite->fail_count +
 	       m_suite->skip_count == m_suite->total_count);
 }
+
 
 /**
  * It runs all the tests within the given suite
@@ -1044,7 +1009,9 @@ void m_suite_run(struct m_suite *m_suite)
 
 
 /**
- * It runs a single test
+ * It runs a single test.
+ * The framework is based on test-suite, so internally it runs the
+ * given test in a dummy test-suite.
  * @param[in] m_test test to run
  */
 void m_test_run(struct m_test *m_test)
