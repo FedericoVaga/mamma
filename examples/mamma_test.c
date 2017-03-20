@@ -252,7 +252,7 @@ int main(int argc, char *argv[])
 		.flags = M_VERBOSE | M_ERRNO,
 		.private = NULL,
 		.tests = tests,
-		.test_count = ARRAY_SIZE(tests),
+		.test_count = M_ARRAY_SIZE(tests),
 		.set_up = NULL,
 		.tear_down = NULL,
 	};

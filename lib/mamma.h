@@ -11,8 +11,7 @@
 /**
  * It computes the given array size
  */
-#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
-
+#define M_ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 
 /**
  * List of predefined assertion type
@@ -163,7 +162,7 @@ struct m_suite {
 			.name = (_name),			\
 			.flags = (_flags),			\
 			.tests = (_tests),			\
-			.test_count = ARRAY_SIZE((_tests)),	\
+			.test_count = M_ARRAY_SIZE((_tests)),	\
 			.set_up = (_up),			\
 			.tear_down = (_down),			\
 			}
