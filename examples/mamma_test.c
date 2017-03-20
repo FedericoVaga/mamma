@@ -243,7 +243,7 @@ static void test_check_only(struct m_test *m_test)
 
 int main(int argc, char *argv[])
 {
-		struct m_test tests[] = {
+	struct m_test tests[] = {
 		m_test(NULL, test_good_assert, NULL),
 		m_test(NULL, test_check_only, NULL),
 		m_test_loop(NULL, test_good_assert, NULL, 10),
