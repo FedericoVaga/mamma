@@ -108,6 +108,7 @@ struct m_test {
 	void (*tear_down)(struct m_test *test); /**< it should reverse the
 						   operations done by the
 						   set_up() function */
+	unsigned int loop; /**< number of test repetitions */
 	enum m_state_machine_test_exit_cause exit;
 	unsigned int warnings;
 };
@@ -122,8 +123,22 @@ struct m_test {
 			.set_up = (_up),	\
 			.test = (_test),	\
 			.tear_down = (_down),	\
+			.loop = 1,		\
 			}
 
+/**
+ * It declare a test in a shorter way
+ * @param[in] _up set_up function to assign
+ * @param[in] _test test function to assign
+ * @param[in] _down tear_down function to assign
+ * @param[in] _loop test repetitions
+ */
+#define m_test_loop(_up, _test, _down, _loop) { \
+			.set_up = (_up),        \
+			.test = (_test),        \
+			.tear_down = (_down),   \
+			.loop = (_loop),        \
+			}
 
 /**
  * Test suite container. It is a collection of tests

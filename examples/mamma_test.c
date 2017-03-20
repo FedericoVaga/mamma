@@ -246,6 +246,8 @@ int main(int argc, char *argv[])
 		struct m_test tests[] = {
 		m_test(NULL, test_good_assert, NULL),
 		m_test(NULL, test_check_only, NULL),
+		m_test_loop(NULL, test_good_assert, NULL, 10),
+		m_test_loop(NULL, test_check_only, NULL, 10),
 	};
 	struct m_suite suite = {
 		.name = "Mamma auto-test",

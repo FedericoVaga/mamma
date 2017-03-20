@@ -84,8 +84,23 @@ static void m_state_test_set_up(void)
  */
 static void m_state_test_run(void)
 {
-	if (status.m_test_cur->test)
-		status.m_test_cur->test(status.m_test_cur);
+	if (status.m_test_cur->suite->flags & M_VERBOSE) {
+		fprintf(stdout, "Suite: %s, Test: %d, Iterations: %d ...\n",
+			status.m_test_cur->suite->name,
+			status.m_test_cur->index,
+			status.m_test_cur->loop);
+	}
+	if (status.m_test_cur->test) {
+		int i;
+
+		for (i = 0; i < status.m_test_cur->loop; ++i) {
+			if (status.m_test_cur->suite->flags & M_VERBOSE)
+				fprintf(stdout, ".");
+			status.m_test_cur->test(status.m_test_cur);
+		}
+	}
+	if (status.m_test_cur->suite->flags & M_VERBOSE)
+		fprintf(stdout, "[Success]\n");
 
 	status.m_test_cur->exit = M_STATE_EXIT_SUCCESS;
 	status.m_test_cur->suite->success_count++;
