@@ -101,6 +101,7 @@ static void test_good_assert(struct m_test *m_test)
 
 	m_assert_str_nrange("bbb", "ddd", "aaa", 4);
 }
+static const char *test_good_desc = "It uses all the asserts functions provided by the framework in order to test them";
 
 /**
  * It uses all checks
@@ -239,18 +240,23 @@ static void test_check_only(struct m_test *m_test)
 	m_check_str_nrange("bbb", "ddd", "aaa", 4);
 	m_check_str_nrange("bbb", "ddd", "ccc", 4);  /* Err */
 }
-
+static const char *test_check_desc = "It uses all the checks functions provided by the framework in order to test them";
 
 int main(int argc, char *argv[])
 {
 	struct m_test tests[] = {
-		m_test(NULL, test_good_assert, NULL),
-		m_test(NULL, test_check_only, NULL),
-		m_test_loop(NULL, test_good_assert, NULL, 10),
-		m_test_loop(NULL, test_check_only, NULL, 10),
+		m_test_desc(NULL, test_good_assert, NULL,
+			    test_good_desc),
+		m_test_desc(NULL, test_check_only, NULL,
+			    test_check_desc),
+		m_test_desc_loop(NULL, test_good_assert, NULL,
+				 test_good_desc, 10),
+		m_test_desc_loop(NULL, test_check_only, NULL,
+				 test_check_desc, 10),
 	};
 	struct m_suite suite = {
 		.name = "Mamma auto-test",
+		.desc = "It tests all the mamma features",
 		.flags = M_VERBOSE | M_ERRNO,
 		.private = NULL,
 		.tests = tests,

@@ -96,6 +96,7 @@ enum m_state_machine_test_exit_cause {
  * Data structure representing a functionality test
  */
 struct m_test {
+	const char *desc; /**< test description */
 	unsigned int index; /**< test index within the test suite */
 	struct m_suite *suite; /**< Suite test where this test belong to */
 	void *private; /**< private data that can be used by set_up() and
@@ -120,6 +121,22 @@ struct m_test {
  * @param[in] _down tear_down function to assign
  */
 #define m_test(_up, _test, _down) {		\
+			.desc = NULL,		\
+			.set_up = (_up),	\
+			.test = (_test),	\
+			.tear_down = (_down),	\
+			.loop = 1,		\
+			}
+
+/**
+ * It declare a test in a shorter way
+ * @param[in] _up set_up function to assign
+ * @param[in] _test test function to assign
+ * @param[in] _down tear_down function to assign
+ * @param[in] _desc test description
+ */
+#define m_test_desc(_up, _test, _down, _desc) {	\
+			.desc = (_desc),	\
 			.set_up = (_up),	\
 			.test = (_test),	\
 			.tear_down = (_down),	\
@@ -134,6 +151,22 @@ struct m_test {
  * @param[in] _loop test repetitions
  */
 #define m_test_loop(_up, _test, _down, _loop) { \
+			.desc = NULL,           \
+			.set_up = (_up),        \
+			.test = (_test),        \
+			.tear_down = (_down),   \
+			.loop = (_loop),        \
+			}
+
+/**
+ * It declare a test in a shorter way
+ * @param[in] _up set_up function to assign
+ * @param[in] _test test function to assign
+ * @param[in] _down tear_down function to assign
+ * @param[in] _loop test repetitions
+ */
+#define m_test_desc_loop(_up, _test, _down, _desc, _loop) {\
+			.desc = (_desc),        \
 			.set_up = (_up),        \
 			.test = (_test),        \
 			.tear_down = (_down),   \
@@ -145,6 +178,7 @@ struct m_test {
  */
 struct m_suite {
 	const char *name; /**< suite name */
+	const char *desc; /**> suite description */
 	unsigned long flags; /**< suite options */
 	void *private; /**< private data that can be used by set_up() and
 			  tear_down() functions in order to pass data to

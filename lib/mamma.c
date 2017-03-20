@@ -89,6 +89,10 @@ static void m_state_test_run(void)
 			status.m_test_cur->suite->name,
 			status.m_test_cur->index,
 			status.m_test_cur->loop);
+		if (status.m_test_cur->desc) {
+			fprintf(stdout, "%s\n", status.m_test_cur->desc);
+		}
+		fprintf(stdout, "\n");
 	}
 	if (status.m_test_cur->test) {
 		int i;
@@ -100,7 +104,7 @@ static void m_state_test_run(void)
 		}
 	}
 	if (status.m_test_cur->suite->flags & M_VERBOSE)
-		fprintf(stdout, "[Success]\n");
+		fprintf(stdout, "\n[Success]\n\n");
 
 	status.m_test_cur->exit = M_STATE_EXIT_SUCCESS;
 	status.m_test_cur->suite->success_count++;
@@ -1017,6 +1021,10 @@ void m_suite_run(struct m_suite *m_suite)
 	if (m_suite->flags & M_VERBOSE) {
 		fprintf(stdout, "Running suite \"%s\"\n", m_suite->name);
 		fprintf(stdout, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+		if (m_suite->desc) {
+			fprintf(stdout, "%s\n", m_suite->desc);
+			fprintf(stdout, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+		}
 	}
 
 	m_suite_run_state_machine(m_suite);
