@@ -222,9 +222,15 @@ struct m_suite {
 #define M_VERBOSE (1 << 0)
 
 /**
- * It prints also ERRNO messages
+ * It prints also ERRNO messages associated to the check/assert
  */
-#define M_ERRNO (1 << 1) /**< print errno messages */
+#define M_ERRNO_CHECK (1 << 1)
+#define M_ERRNO M_ERRNO_CHECK
+
+/**
+ * It prints also ERRNO messages  from last function call
+ */
+#define M_ERRNO_FUNC (1 << 2)
 
 extern void m_test_run(struct m_test *m_test);
 extern void m_suite_run(struct m_suite *m_suite);

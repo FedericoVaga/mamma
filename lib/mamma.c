@@ -868,12 +868,20 @@ static void  m_print_test_msg(enum m_asserts type, const char *fmt,
 			      const char *func, const unsigned int line,
 			      va_list args)
 {
+	int l_errno;
+	char *(*l_strerror)(int);
+
+	if (status.m_test_cur->suite->strerror)
+		l_strerror = status.m_test_cur->suite->strerror;
+	else
+		l_strerror = strerror;
+
 	/* print the error if there is a valid printf format */
 	if (fmt) {
 		if (type == M_CUSTOM) {
 			/* Skip first parameters */
 			va_arg(args, int);
-		        va_arg(args, int);
+			va_arg(args, int);
 			va_arg(args, char*);
 		}
 		fprintf(stdout, "ERROR @ %s():%d - ", func, line);
@@ -881,15 +889,18 @@ static void  m_print_test_msg(enum m_asserts type, const char *fmt,
 		fprintf(stdout, "\n");
 	}
 
-	/* Print errno message if errno is set */
-	if ((status.m_test_cur->suite->flags & M_ERRNO) && errno) {
-		if (status.m_test_cur->suite->strerror)
-			fprintf(stdout, "-- Error %d: %s --\n",
-				errno,
-				status.m_test_cur->suite->strerror(errno));
-		else
-			fprintf(stdout, "-- Error %d: %s --\n",
-				errno, strerror(errno));
+	if ((status.m_test_cur->suite->flags & M_ERRNO_FUNC) && errno)
+		fprintf(stdout, "-- %s():%d -- Error %d: %s --\n",
+			func, line, errno, l_strerror(errno));
+
+	if (type == M_CUSTOM)
+		l_errno = va_arg(args, int);
+	else
+		l_errno = asserts[type].errorno;
+
+	if ((status.m_test_cur->suite->flags & M_ERRNO_CHECK) && l_errno) {
+		fprintf(stdout, "-- assertion -- Error %d: %s --\n",
+			l_errno, l_strerror(l_errno));
 	}
 }
 
@@ -914,13 +925,11 @@ void m_check(enum m_asserts type, unsigned long flags,
 	if (type == M_CUSTOM) {
 		/* When custum, get all assertion data from variadic */
 		cond = va_arg(args, int);
-		errno = va_arg(args, int);
 		fmt = va_arg(args, char*);
 	} else {
 		/* Otherwas get assertion data from the table */
 		cond = asserts[type].condition(args);
 		fmt = asserts[type].fmt;
-		errno = asserts[type].errorno;
 	}
 	va_end(args);
 

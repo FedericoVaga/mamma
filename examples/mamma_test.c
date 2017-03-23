@@ -257,7 +257,7 @@ int main(int argc, char *argv[])
 	struct m_suite suite = {
 		.name = "Mamma auto-test",
 		.desc = "It tests all the mamma features",
-		.flags = M_VERBOSE | M_ERRNO,
+		.flags = M_VERBOSE | M_ERRNO_CHECK | M_ERRNO_FUNC,
 		.private = NULL,
 		.tests = tests,
 		.test_count = M_ARRAY_SIZE(tests),
