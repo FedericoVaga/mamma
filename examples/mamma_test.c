@@ -5,6 +5,10 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <assert.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
 #include <mamma.h>
 
 
@@ -242,6 +246,28 @@ static void test_check_only(struct m_test *m_test)
 }
 static const char *test_check_desc = "It uses all the checks functions provided by the framework in order to test them";
 
+
+static void test_good_real_func(struct m_test *m_test)
+{
+	int fd;
+
+	fd = open("file-that-do-not-exist", O_RDONLY);
+	m_check_int_eq(-1, fd);
+	m_assert_int_eq(ENOENT, errno);
+}
+static const char *test_good_real_func_desc = "It uses a real function that fails";
+
+static void test_bad_real_func(struct m_test *m_test)
+{
+	int fd;
+
+	fd = open("file-that-do-not-exist-but-we-think-it-does", O_RDONLY);
+	m_check_int_neq(-1, fd);
+	m_assert_int_neq(ENOENT, errno);
+}
+static const char *test_bad_real_func_desc = "It uses a real function that fails but we make the assumption that it does not";
+
+
 int main(int argc, char *argv[])
 {
 	struct m_test tests[] = {
@@ -253,6 +279,10 @@ int main(int argc, char *argv[])
 				 test_good_desc, 10),
 		m_test_desc_loop(NULL, test_check_only, NULL,
 				 test_check_desc, 10),
+		m_test_desc(NULL, test_good_real_func, NULL,
+			    test_good_real_func_desc),
+		m_test_desc(NULL, test_bad_real_func, NULL,
+			    test_bad_real_func_desc),
 	};
 	struct m_suite suite = {
 		.name = "Mamma auto-test",
