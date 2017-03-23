@@ -1,3 +1,5 @@
+MAMMA ?= ../
+
 PROGRAMS := mamma_test
 PROGRAMS += skeleton
 
