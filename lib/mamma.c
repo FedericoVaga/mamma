@@ -239,16 +239,7 @@ static void m_suite_run_state_machine(struct m_suite *m_suite)
 
 static int m_cond_true(va_list args)
 {
-	int cond;
-
-	cond = va_arg(args, int);
-
-	if (cond) {
-		return 1;
-	} else {
-		errno = EINVAL;
-		return 0;
-	}
+	return !!va_arg(args, int);
 }
 
 static int m_cond_false(va_list args)
@@ -265,12 +256,7 @@ static int m_cond_int_equal(va_list args)
 	a = va_arg(args, long);
 	b = va_arg(args, long);
 
-	if (a == b) {
-		return 1;
-	} else {
-		errno = EINVAL;
-		return 0;
-	}
+	return (a == b);
 }
 
 static int m_cond_int_not_equal(va_list args)
@@ -285,12 +271,7 @@ static int m_cond_int_greater_than(va_list args)
 	a = va_arg(args, long);
 	b = va_arg(args, long);
 
-	if (a > b) {
-		return 1;
-	} else {
-		errno = EINVAL;
-		return 0;
-	}
+	return (a > b);
 }
 
 static int m_cond_int_greater_equal(va_list args)
@@ -323,12 +304,7 @@ static int m_cond_int_in_range(va_list args)
 	max = va_arg(args, long);
 	val = va_arg(args, long);
 
-	if (min <= val && val <= max) {
-		return 1;
-	} else {
-		errno = EINVAL;
-		return 0;
-	}
+	return (min <= val && val <= max);
 }
 
 static int m_cond_int_not_in_range(va_list args)
@@ -345,12 +321,7 @@ static int m_cond_dbl_equal(va_list args)
 	a = va_arg(args, double);
 	b = va_arg(args, double);
 
-	if (a == b) {
-		return 1;
-	} else {
-		errno = EINVAL;
-		return 0;
-	}
+	return (a == b);
 }
 
 static int m_cond_dbl_not_equal(va_list args)
@@ -365,12 +336,7 @@ static int m_cond_dbl_greater_than(va_list args)
 	a = va_arg(args, double);
 	b = va_arg(args, double);
 
-	if (a > b) {
-		return 1;
-	} else {
-		errno = EINVAL;
-		return 0;
-	}
+	return (a > b);
 }
 
 static int m_cond_dbl_greater_equal(va_list args)
@@ -403,12 +369,7 @@ static int m_cond_dbl_in_range(va_list args)
 	max = va_arg(args, double);
 	val = va_arg(args, double);
 
-	if (min <= val && val <= max) {
-		return 1;
-	} else {
-		errno = EINVAL;
-		return 0;
-	}
+	return (min <= val && val <= max);
 }
 
 static int m_cond_dbl_not_in_range(va_list args)
@@ -424,12 +385,7 @@ static int m_cond_ptr_null(va_list args)
 
 	ptr = va_arg(args, void*);
 
-	if (ptr == NULL) {
-		return 1;
-	} else {
-		errno = EINVAL;
-		return 0;
-	}
+	return (ptr == NULL);
 }
 
 static int m_cond_ptr_not_null(va_list args)
@@ -447,12 +403,7 @@ static int m_cond_mem_eq(va_list args)
 	ptr2 = va_arg(args, void*);
 	size = va_arg(args, size_t);
 
-	if (memcmp(ptr1, ptr2, size) == 0) {
-		return 1;
-	} else {
-		errno = EINVAL;
-		return 0;
-	}
+	return (memcmp(ptr1, ptr2, size) == 0);
 }
 
 static int m_cond_mem_neq(va_list args)
@@ -469,12 +420,7 @@ static int m_cond_mem_greater_than(va_list args)
 	b = va_arg(args, void*);
 	n = va_arg(args, size_t);
 
-	if (memcmp(a, b, n) > 0) {
-		return 1;
-	} else {
-		errno = EINVAL;
-		return 0;
-	}
+	return (memcmp(a, b, n) > 0);
 }
 
 
@@ -491,12 +437,7 @@ static int m_cond_mem_greater_equal(va_list args)
 	b = va_arg(args, void*);
 	n = va_arg(args, size_t);
 
-	if (memcmp(a, b, n) >= 0) {
-		return 1;
-	} else {
-		errno = EINVAL;
-		return 0;
-	}
+	return (memcmp(a, b, n) >= 0);
 }
 
 static int m_cond_mem_less_than(va_list args)
@@ -519,12 +460,7 @@ static int m_cond_mem_in_range(va_list args)
 	val = va_arg(args, void*);
 	n = va_arg(args, size_t);
 
-	if (memcmp(min, val, n) <= 0 && memcmp(val, max, n) <= 0) {
-		return 1;
-	} else {
-		errno = EINVAL;
-		return 0;
-	}
+	return (memcmp(min, val, n) <= 0 && memcmp(val, max, n) <= 0);
 }
 
 /**
@@ -541,12 +477,7 @@ static int m_cond_mem_not_in_range(va_list args)
 	val = va_arg(args, void*);
 	n = va_arg(args, size_t);
 
-	if (memcmp(min, val, n) > 0 || memcmp(val, max, n) > 0) {
-		return 1;
-	} else {
-		errno = EINVAL;
-		return 0;
-	}
+	return (memcmp(min, val, n) > 0 || memcmp(val, max, n) > 0);
 }
 
 
@@ -557,12 +488,7 @@ static int m_cond_str_eq(va_list args)
 	ptr1 = va_arg(args, char*);
 	ptr2 = va_arg(args, char*);
 
-	if (strcmp(ptr1, ptr2) == 0) {
-		return 1;
-	} else {
-		errno = EINVAL;
-		return 0;
-	}
+	return (strcmp(ptr1, ptr2) == 0);
 }
 
 static int m_cond_str_neq(va_list args)
@@ -577,12 +503,7 @@ static int m_cond_str_greater_than(va_list args)
 	a = va_arg(args, char*);
 	b = va_arg(args, char*);
 
-	if (strcmp(a, b) > 0) {
-		return 1;
-	} else {
-		errno = EINVAL;
-		return 0;
-	}
+	return (strcmp(a, b) > 0);
 }
 
 
@@ -597,12 +518,7 @@ static int m_cond_str_greater_equal(va_list args)
 	a = va_arg(args, char*);
 	b = va_arg(args, char*);
 
-	if (strcmp(a, b) >= 0) {
-		return 1;
-	} else {
-		errno = EINVAL;
-		return 0;
-	}
+	return (strcmp(a, b) >= 0);
 }
 
 static int m_cond_str_less_than(va_list args)
@@ -623,12 +539,7 @@ static int m_cond_str_in_range(va_list args)
 	max = va_arg(args, char*);
 	val = va_arg(args, char*);
 
-	if (strcmp(min, val) <= 0 && strcmp(val, max) <= 0) {
-		return 1;
-	} else {
-		errno = EINVAL;
-		return 0;
-	}
+	return (strcmp(min, val) <= 0 && strcmp(val, max) <= 0);
 }
 
 /**
@@ -643,12 +554,7 @@ static int m_cond_str_not_in_range(va_list args)
 	max = va_arg(args, char*);
 	val = va_arg(args, char*);
 
-	if (strcmp(min, val) > 0 || strcmp(val, max) > 0) {
-		return 1;
-	} else {
-		errno = EINVAL;
-		return 0;
-	}
+	return (strcmp(min, val) > 0 || strcmp(val, max) > 0);
 }
 
 
