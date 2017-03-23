@@ -6,6 +6,7 @@
 #ifndef __M_H__
 #define __M_H__
 
+#include <errno.h>
 #include <setjmp.h>
 
 /**
@@ -54,6 +55,8 @@ enum m_asserts {
 	M_MEM_GE,
 	M_MEM_LT,
 	M_MEM_LE,
+	M_ERR_EQ,
+	M_ERR_NEQ,
 	__M_MAX_STANDARD_ASSERTION,
 };
 
@@ -1412,6 +1415,69 @@ extern void m_check(enum m_asserts type, unsigned long flags,
 		(__func__), (__LINE__),					\
 		(char *)(_min), (char *)(_max), (char *)(_val),		\
 		(size_t)(_size))
+/** @} */
+
+
+/**
+ * @addtogroup m_assert_err Error (errno) Assertions and Checks
+ * @{
+ */
+
+/**
+ * If the given error code is not equal to errno, it raises an error and it
+ * stops test execution
+ *
+ * _exp == errno  OK
+ *
+ * _exp != errno  Error
+ *
+ * @param[in] _exp expected error
+ */
+#define m_assert_errno_eq(_exp)					\
+	m_check(M_ERR_EQ, M_FLAG_STOP_ON_ERROR,			\
+		(__func__), (__LINE__), (long)(_exp), (long)(errno))
+
+/**
+ * If the given error code is equal to errno, it raises an error and it
+ * stops test execution
+ *
+ * _exp != errno  OK
+ *
+ * _exp == errno  Error
+ *
+ * @param[in] _exp not expected error
+ */
+#define m_assert_errno_neq(_exp)					\
+	m_check(M_INT_NEQ, M_FLAG_STOP_ON_ERROR,			\
+		(__func__), (__LINE__), (long)(_exp), (long)(errno))
+
+/**
+ * If the given error code is not equal to errno, it raises an error and it
+ * continues test execution
+ *
+ * _exp == errno  OK
+ *
+ * _exp != errno  Error
+ *
+ * @param[in] _exp expected error
+ */
+#define m_check_errno_eq(_exp)					\
+	m_check(M_ERR_EQ, M_FLAG_CONT_ON_ERROR,			\
+		(__func__), (__LINE__), (long)(_exp), (long)(errno))
+
+/**
+ * If the given error code is equal to errno, it raises an error and it
+ * continues test execution
+ *
+ * _exp != errno  OK
+ *
+ * _exp == errno  Error
+ *
+ * @param[in] _exp not expected error
+ */
+#define m_check_errno_neq(_exp)					\
+	m_check(M_ERR_NEQ, M_FLAG_CONT_ON_ERROR,			\
+		(__func__), (__LINE__), (long)(_exp), (long)(errno))
 /** @} */
 
 #endif

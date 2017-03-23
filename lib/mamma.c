@@ -759,6 +759,18 @@ static const struct m_assertion asserts[] = {
 		.fmt = "Expected outside range [%s, %s], but got <%s> (ASCII order)",
 		.errorno = EINVAL,
 	},
+
+	/* Errno */
+	[M_ERR_EQ] = {
+		.condition = m_cond_int_equal,
+		.fmt = "Expected <%d>, but got <%d>",
+		.errorno = 0,
+	},
+	[M_ERR_NEQ] = {
+		.condition = m_cond_int_not_equal,
+		.fmt = "Expected any but not <%d>, but got <%d>",
+		.errorno = 0,
+	},
 };
 
 

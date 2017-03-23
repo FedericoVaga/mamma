@@ -253,7 +253,8 @@ static void test_good_real_func(struct m_test *m_test)
 
 	fd = open("file-that-do-not-exist", O_RDONLY);
 	m_check_int_eq(-1, fd);
-	m_assert_int_eq(ENOENT, errno);
+	m_check_errno_eq(ENOENT);
+	m_assert_errno_eq(ENOENT);
 }
 static const char *test_good_real_func_desc = "It uses a real function that fails";
 
@@ -263,7 +264,8 @@ static void test_bad_real_func(struct m_test *m_test)
 
 	fd = open("file-that-do-not-exist-but-we-think-it-does", O_RDONLY);
 	m_check_int_neq(-1, fd);
-	m_assert_int_neq(ENOENT, errno);
+	m_check_errno_neq(ENOENT);
+	m_assert_errno_neq(ENOENT);
 }
 static const char *test_bad_real_func_desc = "It uses a real function that fails but we make the assumption that it does not";
 
