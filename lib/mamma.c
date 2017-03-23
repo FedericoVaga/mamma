@@ -725,11 +725,11 @@ static const struct m_assertion asserts[] = {
 	/* Errno */
 	[M_ERR_EQ] = {
 		.condition = m_cond_int_equal,
-		.fmt = "Expected <%d>, but got <%d>",
+		.fmt = "Expected errno <%d>, but got <%d>",
 	},
 	[M_ERR_NEQ] = {
 		.condition = m_cond_int_not_equal,
-		.fmt = "Expected any but not <%d>, but got <%d>",
+		.fmt = "Expected any but not errno <%d>, but got <%d>",
 	},
 };
 
@@ -749,22 +749,21 @@ static void  m_print_test_msg(enum m_asserts type, const char *fmt,
 	struct m_suite *suite = status.m_test_cur->suite;
 
 	/* print the error if there is a valid printf format */
-	if (fmt) {
-		if (type == M_CUSTOM) {
-			/* Skip first parameters */
-			va_arg(args, int);
-			va_arg(args, int);
-			va_arg(args, char*);
-		}
-		fprintf(stdout, "ERROR @ %s():%d - ", func, line);
-		vfprintf(stdout, fmt, args);
-		fprintf(stdout, "\n");
-	}
+	if (!fmt)
+		return;
 
+	if (type == M_CUSTOM) {
+		/* Skip first parameters */
+		va_arg(args, int);
+		va_arg(args, int);
+		va_arg(args, char*);
+	}
+	fprintf(stdout, "ERROR @ %s():%d - ", func, line);
+	vfprintf(stdout, fmt, args);
 	if ((suite->flags & M_ERRNO_FUNC) &&
 	    (type == M_ERR_EQ || type == M_ERR_NEQ))
-		fprintf(stdout, "-- %s():%d -- Error %d: %s --\n",
-			func, line, errno, suite->strerror(errno));
+		fprintf(stdout, ": %s", suite->strerror(errno));
+	fprintf(stdout, "\n");
 }
 
 
