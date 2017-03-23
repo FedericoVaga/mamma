@@ -217,6 +217,7 @@ struct m_suite {
 			.test_count = M_ARRAY_SIZE((_tests)),	\
 			.set_up = (_up),			\
 			.tear_down = (_down),			\
+			.strerror = NULL,			\
 			}
 
 /**

@@ -786,13 +786,8 @@ static void  m_print_test_msg(enum m_asserts type, const char *fmt,
 			      const char *func, const unsigned int line,
 			      va_list args)
 {
+	struct m_suite *suite = status.m_test_cur->suite;
 	int l_errno;
-	char *(*l_strerror)(int);
-
-	if (status.m_test_cur->suite->strerror)
-		l_strerror = status.m_test_cur->suite->strerror;
-	else
-		l_strerror = strerror;
 
 	/* print the error if there is a valid printf format */
 	if (fmt) {
@@ -807,18 +802,19 @@ static void  m_print_test_msg(enum m_asserts type, const char *fmt,
 		fprintf(stdout, "\n");
 	}
 
-	if ((status.m_test_cur->suite->flags & M_ERRNO_FUNC) && errno)
+	if ((suite->flags & M_ERRNO_FUNC) &&
+	    (type == M_ERR_EQ || type == M_ERR_NEQ))
 		fprintf(stdout, "-- %s():%d -- Error %d: %s --\n",
-			func, line, errno, l_strerror(errno));
+			func, line, errno, suite->strerror(errno));
 
 	if (type == M_CUSTOM)
 		l_errno = va_arg(args, int);
 	else
 		l_errno = asserts[type].errorno;
 
-	if ((status.m_test_cur->suite->flags & M_ERRNO_CHECK) && l_errno) {
+	if ((suite->flags & M_ERRNO_CHECK)) {
 		fprintf(stdout, "-- assertion -- Error %d: %s --\n",
-			l_errno, l_strerror(l_errno));
+			l_errno, suite->strerror(l_errno));
 	}
 }
 
@@ -906,6 +902,8 @@ static void m_suite_init(struct m_suite *suite)
 	status.m_suite_cur->fail_count = 0;
 	status.m_suite_cur->skip_count = 0;
 	status.m_suite_cur->private = NULL;
+	if (!status.m_suite_cur->strerror)
+		status.m_suite_cur->strerror = strerror;
 
 	for (i = 0; i < suite->test_count; i++) {
 		status.m_suite_cur->tests[i].private = NULL;

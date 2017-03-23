@@ -295,6 +295,7 @@ int main(int argc, char *argv[])
 		.test_count = M_ARRAY_SIZE(tests),
 		.set_up = NULL,
 		.tear_down = NULL,
+		.strerror = NULL,
 	};
 
 	m_suite_run(&suite);
