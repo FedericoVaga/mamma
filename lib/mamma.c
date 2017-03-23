@@ -33,7 +33,6 @@ struct m_assertion {
 	int (*condition)(va_list args); /**< function that evaluate
 					     the assertion condition */
 	const char *fmt; /**< error's format string */
-	const unsigned int errorno; /**< error number to use in case of error */
 };
 
 
@@ -571,205 +570,166 @@ static const struct m_assertion asserts[] = {
 	[M_CUSTOM] = { /* Handled directly by m_check() */
 		.condition = NULL,
 		.fmt = NULL,
-		.errorno = 0,
 	},
 	/* Boolean */
 	[M_TRUE] = {
 		.condition = m_cond_true,
 		.fmt = "Expected \"True\" condition but got \"False\"",
-		.errorno = EINVAL,
 	},
 	[M_FALSE] = {
 		.condition = m_cond_false,
 		.fmt = "Expected \"False\" condition but got \"True\"",
-		.errorno = EINVAL,
 	},
 	/* Integer */
 	[M_INT_EQ] = {
 		.condition = m_cond_int_equal,
 		.fmt = "Expected <%d>, but got <%d>",
-		.errorno = EINVAL,
 	},
 	[M_INT_NEQ] = {
 		.condition = m_cond_int_not_equal,
 		.fmt = "Expected any but not <%d>, but got <%d>",
-		.errorno = EINVAL,
 	},
 	[M_INT_RANGE] = {
 		.condition = m_cond_int_in_range,
 		.fmt = "Expected in range [%d, %d], but got <%d>",
-		.errorno = EINVAL,
 	},
 	[M_INT_NRANGE] = {
 		.condition = m_cond_int_not_in_range,
 		.fmt = "Expected outside range [%d, %d], but got <%d>",
-		.errorno = EINVAL,
 	},
 	[M_INT_GT] = {
 		.condition = m_cond_int_greater_than,
 		.fmt = "Expected <%d> greater than <%d>",
-		.errorno = EINVAL,
 	},
 	[M_INT_GE] = {
 		.condition = m_cond_int_greater_equal,
 		.fmt = "Expected <%d> greater or equal than <%d>",
-		.errorno = EINVAL,
 	},
 	[M_INT_LT] = {
 		.condition = m_cond_int_less_than,
 		.fmt = "Expected <%d> less than <%d>",
-		.errorno = EINVAL,
 	},
 	[M_INT_LE] = {
 		.condition = m_cond_int_less_equal,
 		.fmt = "Expected <%d> less or equal than <%d>",
-		.errorno = EINVAL,
 	},
 	/* Floating Point */
 	[M_DBL_EQ] = {
 		.condition = m_cond_dbl_equal,
 		.fmt = "Expected <%f>, but got <%f>",
-		.errorno = EINVAL,
 	},
 	[M_DBL_NEQ] = {
 		.condition = m_cond_dbl_not_equal,
 		.fmt = "Expected any but not <%f>, but got <%f>",
-		.errorno = EINVAL,
 	},
 	[M_DBL_RANGE] = {
 		.condition = m_cond_dbl_in_range,
 		.fmt = "Expected in range [%f, %f], but got <%f>",
-		.errorno = EINVAL,
 	},
 	[M_DBL_NRANGE] = {
 		.condition = m_cond_dbl_not_in_range,
 		.fmt = "Expected outside range [%f, %f], but got <%f>",
-		.errorno = EINVAL,
 	},
 	[M_DBL_GT] = {
 		.condition = m_cond_dbl_greater_than,
 		.fmt = "Expected <%f> greater than <%f>",
-		.errorno = EINVAL,
 	},
 	[M_DBL_GE] = {
 		.condition = m_cond_dbl_greater_equal,
 		.fmt = "Expected <%f> greater or equal than <%f>",
-		.errorno = EINVAL,
 	},
 	[M_DBL_LT] = {
 		.condition = m_cond_dbl_less_than,
 		.fmt = "Expected <%f> less than <%f>",
-		.errorno = EINVAL,
 	},
 	[M_DBL_LE] = {
 		.condition = m_cond_dbl_less_equal,
 		.fmt = "Expected <%f> less or equal than <%f>",
-		.errorno = EINVAL,
 	},
 	/* Memory Pointer */
 	[M_PTR_NOT_NULL] = {
 		.condition = m_cond_ptr_not_null,
 		.fmt = "Expected not NULL pointer, but got <%p>",
-		.errorno = EINVAL,
 	},
 	[M_PTR_NULL] = {
 		.condition = m_cond_ptr_null,
 		.fmt = "Expected NULL pointer, but got <%p>",
-		.errorno = EINVAL,
 	},
 	/* Memory Area */
 	[M_MEM_EQ] = {
 		.condition = m_cond_mem_eq,
 		.fmt = "Expected the same memory content at addresses %p and %p (size: %zd)",
-		.errorno = EINVAL,
 	},
 	[M_MEM_NEQ] = {
 		.condition = m_cond_mem_neq,
 		.fmt = "Expected different memory content at addresses %p and %p (size: %zd)",
-		.errorno = EINVAL,
 	},
 	[M_MEM_GT] = {
 		.condition = m_cond_mem_greater_than,
 		.fmt = "Expected the memory content at addresses %p to be greater than the memory content at address %p (size: %zd)",
-		.errorno = EINVAL,
 	},
 	[M_MEM_GE] = {
 		.condition = m_cond_mem_greater_equal,
 		.fmt = "Expected the memory content at addresses %p to be greater or equal than the memory content at address %p (size: %zd)",
-		.errorno = EINVAL,
 	},
 	[M_MEM_LT] = {
 		.condition = m_cond_mem_less_than,
 		.fmt = "Expected the memory content at addresses %p to be less than the memory content at address %p (size: %zd)",
-		.errorno = EINVAL,
 	},
 	[M_MEM_LE] = {
 		.condition = m_cond_mem_less_equal,
 		.fmt = "Expected the memory content at addresses %p to be less or equal than the memory content at address %p (size: %zd)",
-		.errorno = EINVAL,
 	},
 	[M_MEM_RANGE] = {
 		.condition = m_cond_mem_in_range,
 		.fmt = "Expected the memory content at addresses %p to be within the range defined by the memory content at %p and %p (size: %zd)",
-		.errorno = EINVAL,
 	},
 	[M_MEM_NRANGE] = {
 		.condition = m_cond_mem_not_in_range,
 		.fmt = "Expected the memory content at addresses %p to be outside the range defined by the memory content at %p and %p (size: %zd)",
-		.errorno = EINVAL,
 	},
 	/* String */
 	[M_STR_EQ] = {
 		.condition = m_cond_str_eq,
 		.fmt = "Expected <%s>, but got <%s>",
-		.errorno = EINVAL,
 	},
 	[M_STR_NEQ] = {
 		.condition = m_cond_str_neq,
 		.fmt = "Expected any but not <%s>, but got <%s>",
-		.errorno = EINVAL,
 	},
 	[M_STR_GT] = {
 		.condition = m_cond_str_greater_than,
 		.fmt = "Expected <%s> greater than <%s> (ASCII order)",
-		.errorno = EINVAL,
 	},
 	[M_STR_GE] = {
 		.condition = m_cond_str_greater_equal,
 		.fmt = "Expected <%s> greater or equal than <%s> (ASCII order)",
-		.errorno = EINVAL,
 	},
 	[M_STR_LT] = {
 		.condition = m_cond_str_less_than,
 		.fmt = "Expected <%s> less than <%s> (ASCII order)",
-		.errorno = EINVAL,
 	},
 	[M_STR_LE] = {
 		.condition = m_cond_str_less_equal,
 		.fmt = "Expected <%s> less or equal than <%s> (ASCII order)",
-		.errorno = EINVAL,
 	},
 	[M_STR_RANGE] = {
 		.condition = m_cond_str_in_range,
 		.fmt = "Expected in range [%s, %s], but got <%s> (ASCII order)",
-		.errorno = EINVAL,
 	},
 	[M_STR_NRANGE] = {
 		.condition = m_cond_str_not_in_range,
 		.fmt = "Expected outside range [%s, %s], but got <%s> (ASCII order)",
-		.errorno = EINVAL,
 	},
 
 	/* Errno */
 	[M_ERR_EQ] = {
 		.condition = m_cond_int_equal,
 		.fmt = "Expected <%d>, but got <%d>",
-		.errorno = 0,
 	},
 	[M_ERR_NEQ] = {
 		.condition = m_cond_int_not_equal,
 		.fmt = "Expected any but not <%d>, but got <%d>",
-		.errorno = 0,
 	},
 };
 
@@ -787,7 +747,6 @@ static void  m_print_test_msg(enum m_asserts type, const char *fmt,
 			      va_list args)
 {
 	struct m_suite *suite = status.m_test_cur->suite;
-	int l_errno;
 
 	/* print the error if there is a valid printf format */
 	if (fmt) {
@@ -806,16 +765,6 @@ static void  m_print_test_msg(enum m_asserts type, const char *fmt,
 	    (type == M_ERR_EQ || type == M_ERR_NEQ))
 		fprintf(stdout, "-- %s():%d -- Error %d: %s --\n",
 			func, line, errno, suite->strerror(errno));
-
-	if (type == M_CUSTOM)
-		l_errno = va_arg(args, int);
-	else
-		l_errno = asserts[type].errorno;
-
-	if ((suite->flags & M_ERRNO_CHECK)) {
-		fprintf(stdout, "-- assertion -- Error %d: %s --\n",
-			l_errno, suite->strerror(l_errno));
-	}
 }
 
 

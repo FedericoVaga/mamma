@@ -227,6 +227,7 @@ struct m_suite {
 
 /**
  * It prints also ERRNO messages associated to the check/assert
+ * @deprecated
  */
 #define M_ERRNO_CHECK (1 << 1)
 #define M_ERRNO M_ERRNO_CHECK
