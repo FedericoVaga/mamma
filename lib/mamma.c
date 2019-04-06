@@ -84,26 +84,26 @@ static void m_state_test_set_up(void)
 static void m_state_test_run(void)
 {
 	if (status.m_test_cur->suite->flags & M_VERBOSE) {
-		fprintf(stdout, "Suite: %s, Test: %d, Iterations: %d ...\n",
+		fprintf(stdout, "Suite: %s, Test: %u, Iterations: %u ...\n",
 			status.m_test_cur->suite->name,
 			status.m_test_cur->index,
 			status.m_test_cur->loop);
 		if (status.m_test_cur->desc) {
-			fprintf(stdout, "%s\n", status.m_test_cur->desc);
+			fputs(status.m_test_cur->desc, stdout);
 		}
-		fprintf(stdout, "\n");
+		fputc(' ', stdout);
 	}
 	if (status.m_test_cur->test) {
-		int i;
+		unsigned int i;
 
 		for (i = 0; i < status.m_test_cur->loop; ++i) {
 			if (status.m_test_cur->suite->flags & M_VERBOSE)
-				fprintf(stdout, ".");
+				fputc(' ', stdout);
 			status.m_test_cur->test(status.m_test_cur);
 		}
 	}
 	if (status.m_test_cur->suite->flags & M_VERBOSE)
-		fprintf(stdout, "\n[Success]\n\n");
+		fputs("\n[Success]\n\n", stdout);
 
 	status.m_test_cur->exit = M_STATE_EXIT_SUCCESS;
 	status.m_test_cur->suite->success_count++;
@@ -758,12 +758,12 @@ static void  m_print_test_msg(enum m_asserts type, const char *fmt,
 		va_arg(args, int);
 		va_arg(args, char*);
 	}
-	fprintf(stdout, "ERROR @ %s():%d - ", func, line);
+	fprintf(stdout, "ERROR @ %s():%u - ", func, line);
 	vfprintf(stdout, fmt, args);
 	if ((suite->flags & M_ERRNO_FUNC) &&
 	    (type == M_ERR_EQ || type == M_ERR_NEQ))
 		fprintf(stdout, ": %s", suite->strerror(errno));
-	fprintf(stdout, "\n");
+	fputc('\n', stdout);
 }
 
 
@@ -823,7 +823,7 @@ void m_skip_test(unsigned int cond, const char *func, const unsigned int line)
 {
 	if (!cond)
 		return;
-	fprintf(stdout, "SKIP@%s():%d\n", func, line);
+	fprintf(stdout, "SKIP@%s():%u\n", func, line);
 
 	m_state_go_to(M_STATE_TEST_SKIP);
 }
@@ -842,7 +842,7 @@ void m_skip_test(unsigned int cond, const char *func, const unsigned int line)
  */
 static void m_suite_init(struct m_suite *suite)
 {
-	int i;
+	unsigned int i;
 
 	status.m_suite_cur = suite;
 	status.m_suite_cur->total_count = 0;
@@ -869,8 +869,8 @@ static void m_suite_init(struct m_suite *suite)
  */
 static void m_suite_summary(struct m_suite *m_suite)
 {
-	fprintf(stdout, "Success     Fail    Skip  |   Total\n");
-	fprintf(stdout, "% 7d  % 7d % 7d  | % 7d\n",
+	fputs("Success     Fail    Skip  |   Total", stdout);
+	fprintf(stdout, "% 7u  % 7u % 7u  | % 7u\n",
 		m_suite->success_count,
 		m_suite->fail_count,
 		m_suite->skip_count,
@@ -893,19 +893,19 @@ void m_suite_run(struct m_suite *m_suite)
 
 	if (m_suite->flags & M_VERBOSE) {
 		fprintf(stdout, "Running suite \"%s\"\n", m_suite->name);
-		fprintf(stdout, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+		fputs("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n", stdout);
 		if (m_suite->desc) {
-			fprintf(stdout, "%s\n", m_suite->desc);
-			fprintf(stdout, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+			fputs(m_suite->desc, stdout);
+			fputs("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n", stdout);
 		}
 	}
 
 	m_suite_run_state_machine(m_suite);
 
 	if (m_suite->flags & M_VERBOSE) {
-		fprintf(stdout, "------------------------------------------\n");
+		fputs("------------------------------------------\n", stdout);
 		m_suite_summary(m_suite);
-		fprintf(stdout, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+		fputs("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n", stdout);
 	}
 }
 
