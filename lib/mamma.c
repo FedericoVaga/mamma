@@ -84,7 +84,7 @@ static void m_state_test_set_up(void)
 static void m_state_test_run(void)
 {
 	if (status.m_test_cur->suite->flags & M_VERBOSE) {
-		fprintf(stdout, "Suite: %s, Test: %d, Iterations: %d ...\n",
+		fprintf(stdout, "Suite: %s, Test: %u, Iterations: %u ...\n",
 			status.m_test_cur->suite->name,
 			status.m_test_cur->index,
 			status.m_test_cur->loop);
@@ -758,7 +758,7 @@ static void  m_print_test_msg(enum m_asserts type, const char *fmt,
 		va_arg(args, int);
 		va_arg(args, char*);
 	}
-	fprintf(stdout, "ERROR @ %s():%d - ", func, line);
+	fprintf(stdout, "ERROR @ %s():%u - ", func, line);
 	vfprintf(stdout, fmt, args);
 	if ((suite->flags & M_ERRNO_FUNC) &&
 	    (type == M_ERR_EQ || type == M_ERR_NEQ))
@@ -823,7 +823,7 @@ void m_skip_test(unsigned int cond, const char *func, const unsigned int line)
 {
 	if (!cond)
 		return;
-	fprintf(stdout, "SKIP@%s():%d\n", func, line);
+	fprintf(stdout, "SKIP@%s():%u\n", func, line);
 
 	m_state_go_to(M_STATE_TEST_SKIP);
 }
@@ -870,7 +870,7 @@ static void m_suite_init(struct m_suite *suite)
 static void m_suite_summary(struct m_suite *m_suite)
 {
 	fprintf(stdout, "Success     Fail    Skip  |   Total\n");
-	fprintf(stdout, "% 7d  % 7d % 7d  | % 7d\n",
+	fprintf(stdout, "% 7u  % 7u % 7u  | % 7u\n",
 		m_suite->success_count,
 		m_suite->fail_count,
 		m_suite->skip_count,
